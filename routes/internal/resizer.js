@@ -1,0 +1,20 @@
+const express = require('express');
+
+const rootPrefix = '../..',
+  basicHelper = require(rootPrefix + '/helpers/basic'),
+  responseHelper = require(rootPrefix + '/lib/response'),
+  apiName = require(rootPrefix + '/lib/globalConstant/apiName'),
+  apiVersions = require(rootPrefix + '/lib/globalConstant/apiVersions'),
+  routeHelper = require(rootPrefix + '/routes/helper');
+
+const router = express.Router(),
+  errorConfig = basicHelper.fetchErrorConfig(apiVersions.internal);
+
+/* Elb health checker request */
+router.post('/image/resize', function(req, res, next) {
+  req.decodedParams.apiName = apiName.resizeAndUpload;
+
+  Promise.resolve(routeHelper.perform(req, res, next, '/app/services/resizeAndUpload', 'r_it_1', null, null, null));
+});
+
+module.exports = router;
