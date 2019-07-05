@@ -16,13 +16,16 @@ const signature = {
         validatorMethods: ['validateString']
       },
       {
+        parameter: 'upload_details',
+        validatorMethods: ['validateObject']
+      },
+      {
         parameter: 'resize_details',
         validatorMethods: ['validateObject']
       }
     ],
     optional: []
-  },
-
+  }
 };
 
 module.exports = signature;

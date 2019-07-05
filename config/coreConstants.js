@@ -17,6 +17,21 @@ class CoreConstants {
   get INTERNAL_API_SECRET_KEY() {
     return process.env.INTERNAL_API_SECRET_KEY;
   }
+
+  /**
+   * S3 AWS config
+   */
+  get S3_AWS_ACCESS_KEY() {
+    return process.env.PR_S3_AWS_ACCESS_KEY;
+  }
+
+  get S3_AWS_SECRET_KEY() {
+    return process.env.PR_S3_AWS_SECRET_KEY;
+  }
+
+  get S3_AWS_REGION() {
+    return process.env.PR_S3_AWS_REGION;
+  }
 }
 
 module.exports = new CoreConstants();

@@ -8,23 +8,47 @@ const rootPrefix = '../..',
   responseHelper = require(rootPrefix + '/lib/response'),
   apiVersions = require(rootPrefix + '/lib/globalConstant/apiVersions'),
   logger = require(rootPrefix + '/lib/logger/customConsoleLogger'),
-  HttpRequest = require(rootPrefix + '/lib/HttpRequest'),
+  uploadBodyToS3 = require(rootPrefix + '/lib/s3/UploadBody'),
   basicHelper = require(rootPrefix + '/helpers/basic');
 
 const errorConfig = basicHelper.fetchErrorConfig(apiVersions.internal);
 
 class ResizeAndUpload {
+  /**
+   * constructor
+   *
+   * @param {String} params.source_url - Source image to be uploaded
+   *
+   * @param {Object} params.resize_details - Details of resize
+   * @param {Object} params.resize_details.width - resize width
+   * @param {Object} params.resize_details.height - resize height
+   * @param {Object} params.resize_details.file_path - path where resized image to be saved
+   * @param {Object} params.resize_details.content_type - content_type if resized image
+   * @param {Object} params.resize_details.s3_url - complete path where resized image found
+   *
+   * @param {String} params.upload_details - basic upload details
+   * @param {String} params.upload_details.bucket - bucket where resized image to be saved
+   * @param {String} params.upload_details.acl - image permissions
+   * @param {String} params.upload_details.region - s3 region where resized image to be saved
+   *
+   */
   constructor(params) {
     const oThis = this;
 
     oThis.sourceImageUrl = params.source_url;
     oThis.resizeImagesDetails = params.resize_details;
+    oThis.uploadDetails = params.upload_details;
     oThis.timeOut = params.timeout || 10000;
 
     oThis.responseImageDetails = {};
     oThis.originalImgBlob = null;
   }
 
+  /**
+   * perform
+   *
+   * @returns {Promise}
+   */
   perform() {
     const oThis = this;
 
@@ -43,6 +67,13 @@ class ResizeAndUpload {
     });
   }
 
+  /**
+   * async perform
+   *
+   * @returns {Promise}
+   * @private
+   *
+   */
   async _asyncPerform() {
     const oThis = this;
 
@@ -50,23 +81,34 @@ class ResizeAndUpload {
 
     await oThis._downloadSourceImage();
 
-    let path = '/Users/alpeshmodi/Documents/pepo/pepo-resizer/tmp.jpeg';
-    fs.writeFile(path, oThis.originalImgBlob, function(err) {
-      if (err) {
-        console.log('image write error.');
-        console.log(err);
-      }
-    });
+    // let path = '/Users/alpeshmodi/Documents/pepo/pepo-resizer/tmp.jpeg';
+    // fs.writeFile(path, oThis.originalImgBlob, function(err) {
+    //   if (err) {
+    //     console.log('image write error.');
+    //     console.log(err);
+    //   }
+    // });
 
-    await oThis.resizeAndSaveImages();
+    await oThis._resizeAndSaveImages();
 
     return responseHelper.successWithData(oThis.responseImageDetails);
   }
 
+  /**
+   *
+   * @returns {Promise}
+   * @private
+   */
   async _validateAndSanitizeParams() {
     return responseHelper.successWithData({});
   }
 
+  /**
+   * Download image from source.
+   *
+   * @returns {Promise}
+   * @private
+   */
   async _downloadSourceImage() {
     const oThis = this;
 
@@ -87,7 +129,7 @@ class ResizeAndUpload {
         if (error) {
           return onReject(
             responseHelper.error({
-              internal_error_identifier: 'l_a_s_rau_5',
+              internal_error_identifier: 'a_s_rau_2',
               api_error_identifier: 'something_went_wrong',
               debug_options: { error: error }
             })
@@ -97,7 +139,7 @@ class ResizeAndUpload {
           if (![200, 304].includes(statusCode)) {
             onReject(
               responseHelper.error({
-                internal_error_identifier: 'l_a_s_rau_1',
+                internal_error_identifier: 'a_s_rau_3',
                 api_error_identifier: 'something_went_wrong',
                 debug_options: { httpStatusCode: statusCode, errorData: response }
               })
@@ -111,7 +153,7 @@ class ResizeAndUpload {
           ) {
             onReject(
               responseHelper.error({
-                internal_error_identifier: 'l_a_s_rau_4',
+                internal_error_identifier: 'a_s_rau_4',
                 api_error_identifier: 'something_went_wrong',
                 debug_options: { httpStatusCode: statusCode, errorData: response }
               })
@@ -126,75 +168,87 @@ class ResizeAndUpload {
     });
   }
 
-  async resizeAndSaveImages() {
-    const oThis = this;
+  /**
+   * resize and save images
+   *
+   * @returns {Promise}
+   * @private
+   */
+  async _resizeAndSaveImages() {
+    const oThis = this,
+      promiseArray = [];
 
     let sharpObj = sharp(oThis.originalImgBlob);
     oThis.originalImageMeta = await sharpObj.metadata();
-    console.log(oThis.originalImageMeta);
 
-    for (let imageSize in oThis.resizeImagesDetails) {
-      await oThis.resizeAndSave(imageSize);
+    for (let key in oThis.resizeImagesDetails) {
+      promiseArray.push(
+        oThis._resizeAndSave(key, oThis.resizeImagesDetails[key]).catch(function(err) {
+          console.log('image resizeAndSave error............');
+          console.log(err);
+        })
+      );
     }
+    return Promise.all(promiseArray);
   }
 
-  resizeAndSave(imageSize) {
+  /**
+   * resize and save images
+   *
+   * @returns {Promise}
+   * @private
+   */
+  _resizeAndSave(imgKey, resizeDetails) {
     const oThis = this;
 
     return new Promise(async function(onResolve, onReject) {
-      let resizeDetails = oThis.resizeImagesDetails[imageSize],
-        s3PostUrl = resizeDetails['post_url'],
-        s3PostFields = resizeDetails['post_fields'],
-        s3PostParams = {},
+      let s3FilePath = resizeDetails['file_path'],
+        contentType = resizeDetails['content_type'],
+        width = isNaN(resizeDetails['width']) ? null : Number(resizeDetails['width']),
+        height = isNaN(resizeDetails['height']) ? null : Number(resizeDetails['height']),
         resizeImageObj = null;
 
-      if (imageSize == 'original') {
+      if (!contentType || !s3FilePath) {
+        return onResolve();
+      }
+      if (!width && !height) {
         resizeImageObj = await sharp(oThis.originalImgBlob);
       } else {
-        let imageDimentions = imageSize.split('x'),
-          width = isNaN(imageDimentions[0]) ? null : Number(imageDimentions[0]),
-          height = isNaN(imageDimentions[1]) ? null : Number(imageDimentions[1]);
-
-        console.log('--------------', width, height);
         if ((width && width > oThis.originalImageMeta.width) || (height && height > oThis.originalImageMeta.height)) {
           return onResolve();
         }
-        resizeImageObj = await sharp(oThis.originalImgBlob).resize({ width: width, height: height });
+        resizeImageObj = await sharp(oThis.originalImgBlob).resize({ width: width, height: height, fit: 'inside' });
       }
 
       let resizedImageBlob = await resizeImageObj.toBuffer();
       let imageMeta = await sharp(resizedImageBlob).metadata();
 
-      for (let i = 0; i < s3PostFields.length; i++) {
-        let postField = s3PostFields[i];
-        s3PostParams[postField.key] = postField.value;
-      }
-      s3PostParams['file'] = resizedImageBlob;
-      console.log('-------------s3PostParams---------', s3PostParams);
-      let httpResp = await new HttpRequest({
-        resource: s3PostUrl,
-        header: { 'Content-Type': 'application/form-data' }
-      }).post(s3PostParams);
+      await uploadBodyToS3.perform({
+        bucket: oThis.uploadDetails['bucket'],
+        acl: oThis.uploadDetails['acl'],
+        s3Region: oThis.uploadDetails['region'],
+        contentType: contentType,
+        filePath: s3FilePath,
+        body: resizedImageBlob
+      });
 
-      console.log('-------------httpResp---------');
-      console.log(httpResp);
-      oThis.responseImageDetails[imageSize] = {
+      oThis.responseImageDetails[imgKey] = {
         width: imageMeta.width,
         height: imageMeta.height,
         size: imageMeta.size,
         url: resizeDetails.s3_url
       };
 
-      let path = `/Users/alpeshmodi/Documents/pepo/pepo-resizer/${imageSize}.jpeg`;
-      fs.writeFile(path, resizedImageBlob, function(err) {
-        if (err) {
-          console.log('image write error.');
-          console.log(err);
-        } else {
-          console.log('image writen.');
-        }
-        return onResolve();
-      });
+      // let path = `/Users/alpeshmodi/Documents/pepo/pepo-resizer/${imgKey}.jpeg`;
+      // fs.writeFile(path, resizedImageBlob, function(err) {
+      //   if (err) {
+      //     console.log('image write error.');
+      //     console.log(err);
+      //   } else {
+      //     console.log('image writen.');
+      //   }
+      //   return onResolve();
+      // });
     });
   }
 }
