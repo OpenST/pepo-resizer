@@ -83,7 +83,6 @@ const getRequestParams = function(req) {
   return {};
 };
 
-
 // before action for verifying the jwt token and setting the decoded info in req obj
 const decodeJwt = function(req, res, next) {
   let token;
@@ -96,7 +95,7 @@ const decodeJwt = function(req, res, next) {
 
   // Set the decoded params in the re and call the next in control flow.
   const jwtOnResolve = function(reqParams) {
-    console.log('---------verifyToken-----', reqParams);
+    console.log('---------verifyToken-----', JSON.stringify(reqParams));
     req.decodedParams = sanitizer.sanitizeParams(reqParams.data);
     // req.decodedParams['app_validated_api_name'] = apiName.allInternalRoutes;
     // Validation passed.
@@ -143,7 +142,6 @@ const appendRequestDebugInfo = function(req, res, next) {
   });
 };
 
-
 /**
  * Append V1 version
  *
@@ -155,7 +153,6 @@ const appendInternalVersion = function(req, res, next) {
   req.decodedParams.apiVersion = apiVersions.internal;
   next();
 };
-
 
 // If the process is not a master
 
