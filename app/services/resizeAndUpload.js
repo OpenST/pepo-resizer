@@ -247,8 +247,8 @@ class ResizeAndUpload {
       //   } else {
       //     console.log('image writen.');
       //   }
-      //   return onResolve();
       // });
+      return onResolve();
     });
   }
 }
