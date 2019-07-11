@@ -73,5 +73,10 @@
     "http_code": "422",
     "code": "UNPROCESSABLE_ENTITY",
     "message": "The request was good, but nevertheless could not be processed."
+  },
+  "source_image_invalid": {
+    "http_code": "422",
+    "code": "UNPROCESSABLE_ENTITY",
+    "message": "The Source image given is invalid."
   }
 }

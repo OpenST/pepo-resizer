@@ -130,7 +130,7 @@ class ResizeAndUpload {
           return onReject(
             responseHelper.error({
               internal_error_identifier: 'a_s_rau_2',
-              api_error_identifier: 'something_went_wrong',
+              api_error_identifier: 'source_image_invalid',
               debug_options: { error: error }
             })
           );
@@ -140,7 +140,7 @@ class ResizeAndUpload {
             onReject(
               responseHelper.error({
                 internal_error_identifier: 'a_s_rau_3',
-                api_error_identifier: 'something_went_wrong',
+                api_error_identifier: 'source_image_invalid',
                 debug_options: { httpStatusCode: statusCode, errorData: response }
               })
             );
@@ -154,7 +154,7 @@ class ResizeAndUpload {
             onReject(
               responseHelper.error({
                 internal_error_identifier: 'a_s_rau_4',
-                api_error_identifier: 'something_went_wrong',
+                api_error_identifier: 'source_image_invalid',
                 debug_options: { httpStatusCode: statusCode, errorData: response }
               })
             );
