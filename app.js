@@ -93,6 +93,7 @@ const decodeJwt = function(req, res, next) {
     token = req.query.token || '';
   }
 
+  console.log('---------token-----', token);
   // Set the decoded params in the re and call the next in control flow.
   const jwtOnResolve = function(reqParams) {
     console.log('---------verifyToken-----', JSON.stringify(reqParams));
@@ -114,7 +115,7 @@ const decodeJwt = function(req, res, next) {
   };
 
   // Verify token
-  Promise.resolve(jwtAuth.verifyToken(token, 'pepoResizer').then(jwtOnResolve, jwtOnReject)).catch(function(err) {
+  Promise.resolve(jwtAuth.verifyToken(token, 'pepoApi').then(jwtOnResolve, jwtOnReject)).catch(function(err) {
     const errorObject = responseHelper.error({
       internal_error_identifier: 'jwt_decide_failed:a_2',
       api_error_identifier: 'jwt_decide_failed',
