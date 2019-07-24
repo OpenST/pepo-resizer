@@ -81,13 +81,13 @@ class ResizeAndUpload {
 
     await oThis._downloadSourceImage();
 
-    let path = '/Users/alpeshmodi/Documents/pepo/pepo-resizer/tmp.jpeg';
-    fs.writeFile(path, oThis.originalImgBlob, function(err) {
-      if (err) {
-        console.log('image write error.');
-        console.log(err);
-      }
-    });
+    // let path = '/Users/alpeshmodi/Documents/pepo/pepo-resizer/tmp.jpeg';
+    // fs.writeFile(path, oThis.originalImgBlob, function(err) {
+    //   if (err) {
+    //     console.log('image write error.');
+    //     console.log(err);
+    //   }
+    // });
 
     await oThis._resizeAndSaveImages();
 
@@ -240,15 +240,15 @@ class ResizeAndUpload {
         url: resizeDetails.s3_url
       };
 
-      let path = `/Users/alpeshmodi/Documents/pepo/pepo-resizer/${imgKey}.jpeg`;
-      fs.writeFile(path, resizedImageBlob, function(err) {
-        if (err) {
-          console.log('image write error.');
-          console.log(err);
-        } else {
-          console.log('image writen.');
-        }
-      });
+      // let path = `/Users/alpeshmodi/Documents/pepo/pepo-resizer/${imgKey}.jpeg`;
+      // fs.writeFile(path, resizedImageBlob, function(err) {
+      //   if (err) {
+      //     console.log('image write error.');
+      //     console.log(err);
+      //   } else {
+      //     console.log('image writen.');
+      //   }
+      // });
 
       return onResolve();
     });
