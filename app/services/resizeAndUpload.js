@@ -81,13 +81,13 @@ class ResizeAndUpload {
 
     await oThis._downloadSourceImage();
 
-    // let path = '/Users/alpeshmodi/Documents/pepo/pepo-resizer/tmp.jpeg';
-    // fs.writeFile(path, oThis.originalImgBlob, function(err) {
-    //   if (err) {
-    //     console.log('image write error.');
-    //     console.log(err);
-    //   }
-    // });
+    let path = '/Users/alpeshmodi/Documents/pepo/pepo-resizer/tmp.jpeg';
+    fs.writeFile(path, oThis.originalImgBlob, function(err) {
+      if (err) {
+        console.log('image write error.');
+        console.log(err);
+      }
+    });
 
     await oThis._resizeAndSaveImages();
 
@@ -206,7 +206,8 @@ class ResizeAndUpload {
         contentType = resizeDetails['content_type'],
         width = isNaN(resizeDetails['width']) ? null : Number(resizeDetails['width']),
         height = isNaN(resizeDetails['height']) ? null : Number(resizeDetails['height']),
-        resizeImageObj = null;
+        resizeImageObj = null,
+        imageQuality = 90;
 
       if (!contentType || !s3FilePath) {
         return onResolve();
@@ -220,7 +221,7 @@ class ResizeAndUpload {
         resizeImageObj = await sharp(oThis.originalImgBlob).resize({ width: width, height: height, fit: 'inside' });
       }
 
-      let resizedImageBlob = await resizeImageObj.toBuffer();
+      let resizedImageBlob = await resizeImageObj.jpeg({ quality: imageQuality }).toBuffer();
       let imageMeta = await sharp(resizedImageBlob).metadata();
 
       await uploadBodyToS3.perform({
@@ -239,15 +240,16 @@ class ResizeAndUpload {
         url: resizeDetails.s3_url
       };
 
-      // let path = `/Users/alpeshmodi/Documents/pepo/pepo-resizer/${imgKey}.jpeg`;
-      // fs.writeFile(path, resizedImageBlob, function(err) {
-      //   if (err) {
-      //     console.log('image write error.');
-      //     console.log(err);
-      //   } else {
-      //     console.log('image writen.');
-      //   }
-      // });
+      let path = `/Users/alpeshmodi/Documents/pepo/pepo-resizer/${imgKey}.jpeg`;
+      fs.writeFile(path, resizedImageBlob, function(err) {
+        if (err) {
+          console.log('image write error.');
+          console.log(err);
+        } else {
+          console.log('image writen.');
+        }
+      });
+
       return onResolve();
     });
   }
