@@ -19,7 +19,7 @@
     "morgan": "1.9.1",
     "mysql": "2.16.0",
     "sanitize-html": "1.19.3",
-    "sharp": "^0.14.1"
+    "sharp": "0.22.1"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
