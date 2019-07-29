@@ -18,6 +18,7 @@ class ResizeAndUpload {
    * constructor
    *
    * @param {String} params.source_url - Source image to be uploaded
+   * @param {Number} params.image_quality - image quality percentage.
    *
    * @param {Object} params.resize_details - Details of resize
    * @param {Object} params.resize_details.width - resize width
@@ -38,6 +39,7 @@ class ResizeAndUpload {
     oThis.sourceImageUrl = params.source_url;
     oThis.resizeImagesDetails = params.resize_details;
     oThis.uploadDetails = params.upload_details;
+    oThis.imageQuality = params.image_quality || 80;
     oThis.timeOut = params.timeout || 10000;
 
     oThis.responseImageDetails = {};
@@ -206,8 +208,7 @@ class ResizeAndUpload {
         contentType = resizeDetails['content_type'],
         width = isNaN(resizeDetails['width']) ? null : Number(resizeDetails['width']),
         height = isNaN(resizeDetails['height']) ? null : Number(resizeDetails['height']),
-        resizeImageObj = null,
-        imageQuality = 90;
+        resizeImageObj = null;
 
       if (!contentType || !s3FilePath) {
         return onResolve();
@@ -221,7 +222,7 @@ class ResizeAndUpload {
         resizeImageObj = await sharp(oThis.originalImgBlob).resize({ width: width, height: height, fit: 'inside' });
       }
 
-      let resizedImageBlob = await resizeImageObj.jpeg({ quality: imageQuality }).toBuffer();
+      let resizedImageBlob = await resizeImageObj.jpeg({ quality: oThis.imageQuality }).toBuffer();
       let imageMeta = await sharp(resizedImageBlob).metadata();
 
       await uploadBodyToS3.perform({

@@ -24,7 +24,12 @@ const signature = {
         validatorMethods: ['validateObject']
       }
     ],
-    optional: []
+    optional: [
+      {
+        parameter: 'image_quality',
+        validatorMethods: ['validateNonZeroInteger']
+      }
+    ]
   }
 };
 
