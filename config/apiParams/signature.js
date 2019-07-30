@@ -25,6 +25,23 @@ const signature = {
       }
     ],
     optional: []
+  },
+  compressVideo: {
+    mandatory: [
+      {
+        parameter: 'source_url',
+        validatorMethods: ['validateString']
+      },
+      {
+        parameter: 'upload_details',
+        validatorMethods: ['validateObject']
+      },
+      {
+        parameter: 'compression_data',
+        validatorMethods: ['validateObject']
+      }
+    ],
+    optional: []
   }
 };
 

@@ -26,7 +26,7 @@ class ResizeAndUpload {
    * @param {Object} params.resize_details.content_type - content_type if resized image
    * @param {Object} params.resize_details.s3_url - complete path where resized image found
    *
-   * @param {String} params.upload_details - basic upload details
+   * @param {Object} params.upload_details - basic upload details
    * @param {String} params.upload_details.bucket - bucket where resized image to be saved
    * @param {String} params.upload_details.acl - image permissions
    * @param {String} params.upload_details.region - s3 region where resized image to be saved

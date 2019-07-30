@@ -17,4 +17,10 @@ router.post('/image/resize', function(req, res, next) {
   Promise.resolve(routeHelper.perform(req, res, next, '/app/services/resizeAndUpload', 'r_it_1', null, null, null));
 });
 
+router.post('/video/compress', function(req, res, next) {
+  req.decodedParams.apiName = apiName.compressVideo;
+
+  Promise.resolve(routeHelper.perform(req, res, next, '/app/services/CompressVideo', 'r_it_2', null, null, null));
+});
+
 module.exports = router;
