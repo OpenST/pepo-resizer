@@ -1,7 +1,7 @@
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+// const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const fs = require('fs');
 const Ffmpeg = require('fluent-ffmpeg');
-Ffmpeg.setFfmpegPath(ffmpegPath);
+// Ffmpeg.setFfmpegPath(ffmpegPath);
 
 const rootPrefix = '../..',
   responseHelper = require(rootPrefix + '/lib/response'),
