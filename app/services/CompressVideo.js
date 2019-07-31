@@ -1,5 +1,9 @@
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffprobePath = require('@ffprobe-installer/ffprobe').path;
 const fs = require('fs');
 const Ffmpeg = require('fluent-ffmpeg');
+Ffmpeg.setFfmpegPath(ffmpegPath);
+Ffmpeg.setFfprobePath(ffprobePath);
 
 const rootPrefix = '../..',
   responseHelper = require(rootPrefix + '/lib/response'),
@@ -130,14 +134,7 @@ class CompressVideo {
         .outputOptions('-movflags faststart')
         .size(sizeToCompress)
         .on('start', function(commandLine) {
-          logger.info('Compression start for size: ', sizeToCompress);
           logger.info('Spawned FFmpeg with command: ', commandLine);
-        })
-        .on('codecData', function(data) {
-          console.log('Input is ' + data.audio + ' audio with ' + data.video + ' video');
-        })
-        .on('progress', function(progress) {
-          console.log('Processing: ' + Math.floor(progress.frames / 10) + '% done');
         })
         .on('error', function(err) {
           logger.info('Compression failed for size: ', sizeToCompress, err);

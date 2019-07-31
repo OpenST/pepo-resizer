@@ -7,6 +7,8 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "1.0.19",
+    "@ffprobe-installer/ffprobe": "1.0.12",
     "@ostdotcom/base": "1.0.0",
     "aws-sdk": "2.373.0",
     "body-parser": "1.18.3",
