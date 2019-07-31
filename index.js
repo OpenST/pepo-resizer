@@ -69,5 +69,11 @@ exports.handler = async (event) => {
 
   console.log('response: ', response);
 
-  return response;
+  return {
+    statusCode: 200,
+    headers: {
+      'x-pepo-header': 't123'
+    },
+    body: JSON.stringify(response)
+  };
 };
