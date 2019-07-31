@@ -7,7 +7,9 @@
  */
 
 const rootPrefix = '.',
-  routeHelper = require(rootPrefix + '/routes/helper');
+  apiName = require(rootPrefix + '/lib/globalConstant/apiName'),
+  apiVersions = require(rootPrefix + '/lib/globalConstant/apiVersions'),
+  ApiParamsValidator = require(rootPrefix + '/lib/validators/ApiParams');
 
 class Executor {
   /**
@@ -30,19 +32,35 @@ class Executor {
 
     let resource = oThis.event.resource;
     let queryParams = oThis.event.queryStringParameters;
+    let body = oThis.event.body;
+    let httpMethod = oThis.event.httpMethod;
 
     let serviceToUse;
     if (resource === '/compress-video') {
       serviceToUse = '/app/services/CompressVideo';
     }
 
-    console.log('queryParams: ', queryParams);
-    console.log('serviceToUse: ', serviceToUse);
+    console.log('typeof(body): ', typeof body);
+
+    if (body && typeof body === 'string') {
+      body = JSON.parse(body);
+    }
+
+    console.log('body: ', body);
 
     return {
       params: queryParams,
-      serviceToUse: serviceToUse
+      serviceToUse: serviceToUse,
+      body: body
     };
+  }
+
+  async handleResponse(response) {
+    if (response.isFailure() && onServiceFailure) {
+      await onServiceFailure(response);
+    }
+
+    response.renderResponse(res, errorConfig);
   }
 
   /**
@@ -55,9 +73,23 @@ class Executor {
 
     let reqData = oThis.getResourceAndParamsForAction();
 
-    console.log('reqData: ', reqData);
+    const apiParamsValidatorRsp = await new ApiParamsValidator({
+      api_name: apiName.compressVideo,
+      api_version: apiVersions.internal,
+      api_params: reqData.body
+    }).perform();
 
-    return reqData;
+    let serviceParams = apiParamsValidatorRsp.data.sanitisedApiParams;
+
+    console.log('serviceParams: ', serviceParams);
+
+    let Service = require(rootPrefix + reqData.serviceToUse);
+
+    console.log('Service: ', JSON.stringify(Service));
+
+    return new Service(serviceParams).perform();
+
+    // return reqData;
   }
 }
 
@@ -65,7 +97,7 @@ exports.handler = async (event) => {
   console.log('event: ', event);
 
   let executor = new Executor(event);
-  let response = await executor.perform();
+  let responseBody = await executor.perform();
 
   console.log('response: ', response);
 
@@ -74,6 +106,6 @@ exports.handler = async (event) => {
     headers: {
       'x-pepo-header': 't123'
     },
-    body: JSON.stringify(response)
+    body: responseBody
   };
 };
