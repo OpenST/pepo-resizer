@@ -118,7 +118,7 @@ class CompressVideo {
   _compressAndUpload(compressionSize) {
     const oThis = this,
       sizeToCompress = compressionSize.width + 'x?',
-      fileName = sizeToCompress + '-' + oThis.sourceUrl.split('/').pop();
+      fileName = '/mnt/pepo/apps/pepoImageResize/shared/' + sizeToCompress + '-' + oThis.sourceUrl.split('/').pop();
 
     return new Promise(function(onResolve, onReject) {
       let command = new Ffmpeg({
