@@ -11,7 +11,7 @@ class CoreConstants {
   }
 
   get DEBUG_ENABLED() {
-    return process.env.PR_DEBUG_ENABLED;
+    return process.env.PR_DEBUG_ENABLED || 1;
   }
 
   get PR_INTERNAL_API_SECRET_KEY() {
