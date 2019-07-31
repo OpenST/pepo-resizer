@@ -1,7 +1,5 @@
-// const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const fs = require('fs');
 const Ffmpeg = require('fluent-ffmpeg');
-// Ffmpeg.setFfmpegPath(ffmpegPath);
 
 const rootPrefix = '../..',
   responseHelper = require(rootPrefix + '/lib/response'),
@@ -10,6 +8,10 @@ const rootPrefix = '../..',
   uploadBodyToS3 = require(rootPrefix + '/lib/s3/UploadBody'),
   basicHelper = require(rootPrefix + '/helpers/basic');
 
+/**
+ * Class to compress video
+ *
+ */
 class CompressVideo {
   /**
    * constructor
@@ -46,7 +48,6 @@ class CompressVideo {
       let compressPromise = oThis
         ._compressAndUpload(oThis.compressionSizes[size])
         .then(function(response) {
-          console.log(response);
           if (response.isSuccess()) {
             oThis.compressedData[size] = response.data;
           } else {
@@ -149,32 +150,85 @@ class CompressVideo {
         })
         .on('end', function() {
           logger.info('Compression completed for size: ', sizeToCompress);
-          logger.info('Uploading file: ', compressionSize.s3_url);
-          uploadBodyToS3
-            .perform({
-              bucket: oThis.uploadDetails['bucket'],
-              acl: oThis.uploadDetails['acl'],
-              s3Region: oThis.uploadDetails['region'],
-              contentType: compressionSize.content_type,
-              filePath: compressionSize.file_path,
-              body: fs.createReadStream(fileName)
-            })
-            .then(function(resp) {
-              fs.unlinkSync(fileName);
-              return onResolve(responseHelper.successWithData({ url: compressionSize.s3_url }));
-            })
-            .catch(function(err) {
-              return onResolve(
-                responseHelper.error({
-                  internal_error_identifier: 'a_s_cv_2',
-                  api_error_identifier: 'upload_failed',
-                  debug_options: err
-                })
-              );
-            });
+          let promises = [];
+          // upload file
+          promises.push(oThis._uploadFile(fileName, compressionSize.content_type, compressionSize.file_path));
+          // fetch dimensions
+          promises.push(oThis._fetchVideoDimensions(fileName));
+
+          Promise.all(promises).then(function(responses) {
+            let resp = {};
+            if (responses[0].isSuccess()) {
+              resp.url = compressionSize.s3_url;
+            } else {
+              return onResolve(responses[0]);
+            }
+            if (responses[1].isSuccess()) {
+              resp.width = responses[1].data.width;
+              resp.height = responses[1].data.height;
+            }
+            fs.unlinkSync(fileName);
+            return onResolve(responseHelper.successWithData(resp));
+          });
         })
         .saveToFile(fileName);
     });
+  }
+
+  /**
+   * Fetch dimensions of video
+   *
+   * @param videoFile
+   * @returns {Promise<any>}
+   * @private
+   */
+  _fetchVideoDimensions(videoFile) {
+    const oThis = this;
+
+    return new Promise(function(onResolve, onReject) {
+      // Find dimensions of video
+      Ffmpeg.ffprobe(videoFile, function(err, data) {
+        let dimensions = { width: 0, height: 0 };
+        if (data && data.streams && data.streams[0]) {
+          dimensions.width = data.streams[0].width;
+          dimensions.height = data.streams[0].height;
+        }
+        onResolve(responseHelper.successWithData(dimensions));
+      });
+    });
+  }
+
+  /**
+   * Upload File to S3
+   *
+   * @param videoFile
+   * @param contentType
+   * @param filePath
+   * @returns {Promise<result|T|*>}
+   * @private
+   */
+  async _uploadFile(videoFile, contentType, filePath) {
+    const oThis = this;
+
+    logger.info('Uploading file: ', filePath);
+    await uploadBodyToS3
+      .perform({
+        bucket: oThis.uploadDetails['bucket'],
+        acl: oThis.uploadDetails['acl'],
+        s3Region: oThis.uploadDetails['region'],
+        contentType: contentType,
+        filePath: filePath,
+        body: fs.createReadStream(videoFile)
+      })
+      .catch(function(err) {
+        return responseHelper.error({
+          internal_error_identifier: 'a_s_cv_2',
+          api_error_identifier: 'upload_failed',
+          debug_options: err
+        });
+      });
+
+    return responseHelper.successWithData({});
   }
 }
 
