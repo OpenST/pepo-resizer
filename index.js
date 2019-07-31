@@ -11,13 +11,38 @@ const rootPrefix = '.',
 
 class Executor {
   /**
-   * @param {Object} events
+   * @param {Object} event
    *
    * @constructor
    **/
-  constructor(events) {
+  constructor(event) {
     const oThis = this;
-    oThis.events = events;
+    oThis.event = event;
+  }
+
+  /**
+   * Get Resource and Parameters for the resource
+   *
+   * @return Object
+   **/
+  getResourceAndParamsForAction() {
+    const oThis = this;
+
+    let resource = oThis.event.resource;
+    let queryParams = oThis.event.queryStringParameters;
+
+    let serviceToUse;
+    if (resource === '/compress-video') {
+      serviceToUse = '/app/services/CompressVideo';
+    }
+
+    console.log('queryParams: ', queryParams);
+    console.log('serviceToUse: ', serviceToUse);
+
+    return {
+      params: queryParams,
+      serviceToUse: serviceToUse
+    };
   }
 
   /**
@@ -28,11 +53,11 @@ class Executor {
   async perform() {
     const oThis = this;
 
-    let req = {};
+    let reqData = oThis.getResourceAndParamsForAction();
 
-    return Promise.resolve(
-      routeHelper.perform(req, {}, null, '/app/services/CompressVideo', 'r_it_2', null, null, null)
-    );
+    console.log('reqData: ', reqData);
+
+    return reqData;
   }
 }
 
@@ -41,7 +66,8 @@ exports.handler = async (event) => {
 
   let executor = new Executor(event);
   let response = await executor.perform();
-  response.statusCode = 200;
+
+  console.log('response: ', response);
 
   return response;
 };

@@ -1,14 +1,30 @@
 #!/usr/bin/env bash
 
-dir=$(pwd);
+function run(){
 
-echo "dir: $dir"
+    dir=$(pwd);
+    actualDir=$(realpath $dir)
+    prevDir=`cd $actualDir ; cd ..; pwd`
 
-chmod -R 755 $dir
+    echo "actualDir: $actualDir"
+    echo "prevDir: $prevDir"
 
-zip -r ../lambda.zip . --exclude log
-echo "Compression done!"
+    chmod -R 755 $actualDir
 
-aws s3 cp ../../releases/lambda.zip s3://devops.stagingpepo2.com/
+    file="${prevDir}/lambda.zip"
 
-echo "Upload done!"
+    if [[ -f ${file} ]]; then
+        zip  --exclude log/\* -rf ${file} .
+    else
+        zip  --exclude log/\* -r ${file} .
+    fi
+
+    echo "Compression done!"
+
+    aws s3 cp ${file} s3://devops.stagingpepo2.com/
+
+    echo "Upload done!"
+
+}
+
+run
