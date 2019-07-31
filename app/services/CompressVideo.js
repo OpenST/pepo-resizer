@@ -164,6 +164,8 @@ class CompressVideo {
               return onResolve(responses[0]);
             }
             if (responses[1].isSuccess()) {
+              const stats = fs.statSync(fileName);
+              resp.size = stats.size;
               resp.width = responses[1].data.width;
               resp.height = responses[1].data.height;
             }
