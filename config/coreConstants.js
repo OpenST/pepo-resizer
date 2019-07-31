@@ -32,6 +32,14 @@ class CoreConstants {
   get S3_AWS_REGION() {
     return process.env.PR_S3_AWS_REGION;
   }
+
+  get videoTempPath() {
+    if (this.environment === 'development') {
+      return '';
+    } else {
+      return '/mnt/pepo/apps/pepoImageResize/shared/';
+    }
+  }
 }
 
 module.exports = new CoreConstants();
