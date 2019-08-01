@@ -76,41 +76,6 @@ class CompressVideo {
     });
   }
 
-  // async trial(){
-  //   const oThis = this;
-  //
-  //   let outStream  = fs.createWriteStream('/Users/pankaj/Downloads/resized.mp4');
-  //
-  //   let command = new Ffmpeg({source: oThis.sourceUrl,
-  //     timeout: 120})
-  //     .withOptions(
-  //       ['-c:v libx264', '-preset slow',
-  //         '-crf 28',
-  //         '-ss 00:00:00', '-t 00:00:30']
-  //     ).outputOptions("-movflags faststart")
-  //     .format('mp4')
-  //     .size('540x960')
-  //     .on('start', function(commandLine) {
-  //       console.log('Spawned FFmpeg with command: ' + commandLine);
-  //     }).on('codecData', function(data) {
-  //       console.log('Input is ' + data.audio + ' audio with ' + data.video + ' video');
-  //     }).on('progress', function(progress) {
-  //       console.log('Processing: ' + (Math.floor(progress.frames/10)) + '% done');
-  //     }).on('error', function(err) {
-  //       console.log('Cannot process video: ' + err.message);
-  //     }).on('end', function() {
-  //       console.log('Processing finished successfully');
-  //     }).on('data', function(chunk) {
-  //     console.log('ffmpeg just wrote ' + chunk.length + ' bytes');
-  //     }).saveToFile("/Users/pankaj/Downloads/resized.mp4");
-  //
-  //   // let ffstream = command.pipe(outStream, { end: true });
-  //   // ffstream.on('data', function(chunk) {
-  //   //   console.log('ffmpeg just wrote ' + chunk.length + ' bytes');
-  //   // });
-  //   // command.saveToFile("/Users/pankaj/Downloads/resized.mp4");
-  // }
-
   /**
    * Compress video to given size and upload it to s3
    *
@@ -146,27 +111,25 @@ class CompressVideo {
         })
         .on('end', function() {
           logger.info('Compression completed for size: ', sizeToCompress);
-          let promises = [];
-          // upload file
-          promises.push(oThis._uploadFile(fileName, compressionSize.content_type, compressionSize.file_path));
-          // fetch dimensions
-          promises.push(oThis._fetchVideoDimensions(fileName));
-
-          Promise.all(promises).then(function(responses) {
-            let resp = {};
-            if (responses[0].isSuccess()) {
-              resp.url = compressionSize.s3_url;
-            } else {
-              return onResolve(responses[0]);
-            }
-            if (responses[1].isSuccess()) {
+          let dimensionsResp = {};
+          oThis._fetchVideoDimensions(fileName).then(function(response) {
+            if (response.isSuccess()) {
               const stats = fs.statSync(fileName);
-              resp.size = stats.size;
-              resp.width = responses[1].data.width;
-              resp.height = responses[1].data.height;
+              dimensionsResp.size = stats.size;
+              dimensionsResp.width = response.data.width;
+              dimensionsResp.height = response.data.height;
             }
-            fs.unlinkSync(fileName);
-            return onResolve(responseHelper.successWithData(resp));
+            oThis
+              ._uploadFile(fileName, compressionSize.content_type, compressionSize.file_path, dimensionsResp)
+              .then(function(resp) {
+                if (resp.isSuccess()) {
+                  dimensionsResp.url = compressionSize.s3_url;
+                } else {
+                  return onResolve(resp);
+                }
+                fs.unlinkSync(fileName);
+                return onResolve(responseHelper.successWithData(dimensionsResp));
+              });
           });
         })
         .saveToFile(fileName);
@@ -197,20 +160,22 @@ class CompressVideo {
   }
 
   /**
-   * Upload File to S3
+   * Upload file to S3
    *
    * @param videoFile
    * @param contentType
    * @param filePath
-   * @returns {Promise<result|T|*>}
+   * @param metaData
+   * @returns {Promise<*|result>}
    * @private
    */
-  async _uploadFile(videoFile, contentType, filePath) {
+  async _uploadFile(videoFile, contentType, filePath, metaData) {
     const oThis = this;
 
     logger.info('Uploading file: ', filePath);
     await uploadBodyToS3
       .perform({
+        metaData: metaData,
         bucket: oThis.uploadDetails['bucket'],
         acl: oThis.uploadDetails['acl'],
         s3Region: oThis.uploadDetails['region'],
