@@ -10,12 +10,13 @@
     "@ffmpeg-installer/ffmpeg": "1.0.19",
     "@ffprobe-installer/ffprobe": "1.0.12",
     "aws-sdk": "2.373.0",
+    "bignumber.js": "9.0.0",
     "fluent-ffmpeg": "2.1.2",
     "jsonwebtoken": "8.4.0",
     "morgan": "1.9.1",
+    "request": "2.88.0",
     "sanitize-html": "1.19.3",
-    "sharp": "0.22.1",
-    "bignumber.js": "9.0.0"
+    "sharp": "0.22.1"
   },
   "devDependencies": {
     "body-parser": "1.18.3",
