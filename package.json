@@ -9,22 +9,19 @@
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "1.0.19",
     "@ffprobe-installer/ffprobe": "1.0.12",
-    "@ostdotcom/base": "1.0.0",
     "aws-sdk": "2.373.0",
-    "body-parser": "1.18.3",
-    "commander": "2.19.0",
-    "continuation-local-storage": "3.2.1",
-    "express": "4.16.4",
     "fluent-ffmpeg": "2.1.2",
-    "giphy-js-sdk-core": "1.0.6",
-    "helmet": "3.15.0",
     "jsonwebtoken": "8.4.0",
     "morgan": "1.9.1",
-    "mysql": "2.16.0",
     "sanitize-html": "1.19.3",
-    "sharp": "0.22.1"
+    "sharp": "0.22.1",
+    "bignumber.js": "9.0.0"
   },
   "devDependencies": {
+    "body-parser": "1.18.3",
+    "continuation-local-storage": "3.2.1",
+    "express": "4.16.4",
+    "helmet": "3.15.0",
     "eslint": "^5.16.0",
     "lint-staged": "7.2.0",
     "pre-commit": "1.2.2",

@@ -4,8 +4,6 @@
  * @module helpers/basic
  */
 
-const BigNumber = require('bignumber.js');
-
 const rootPrefix = '..',
   coreConstants = require(rootPrefix + '/config/coreConstants'),
   apiVersions = require(rootPrefix + '/lib/globalConstant/apiVersions'),
@@ -18,7 +16,6 @@ const rootPrefix = '..',
  * @class BasicHelper
  */
 class BasicHelper {
-
   /**
    * Create a duplicate object.
    *
@@ -121,7 +118,6 @@ class BasicHelper {
 
     return true;
   }
-
 }
 
 module.exports = new BasicHelper();

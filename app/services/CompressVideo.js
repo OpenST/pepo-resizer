@@ -7,11 +7,9 @@ Ffmpeg.setFfprobePath(ffprobePath);
 
 const rootPrefix = '../..',
   responseHelper = require(rootPrefix + '/lib/response'),
-  apiVersions = require(rootPrefix + '/lib/globalConstant/apiVersions'),
   logger = require(rootPrefix + '/lib/logger/customConsoleLogger'),
   uploadBodyToS3 = require(rootPrefix + '/lib/s3/UploadBody'),
-  coreConstants = require(rootPrefix + '/config/coreConstants'),
-  basicHelper = require(rootPrefix + '/helpers/basic');
+  coreConstants = require(rootPrefix + '/config/coreConstants');
 
 /**
  * Class to compress video
