@@ -94,46 +94,44 @@ const decodeJwt = function(req, res, next) {
   }
 
   console.log('---------token-----', token);
-  // // Set the decoded params in the re and call the next in control flow.
-  // const jwtOnResolve = function(reqParams) {
-  //   console.log('---------verifyToken-----', JSON.stringify(reqParams));
-  //   req.decodedParams = sanitizer.sanitizeParams(reqParams.data);
-  //   // req.decodedParams['app_validated_api_name'] = apiName.allInternalRoutes;
-  //   // Validation passed.
-  //   return next();
-  // };
-  //
-  // // send error, if token is invalid
-  // const jwtOnReject = function(err) {
-  //   return responseHelper
-  //     .error({
-  //       internal_error_identifier: 'a_1',
-  //       api_error_identifier: 'invalid_or_expired_jwt_token',
-  //       debug_options: {}
-  //     })
-  //     .renderResponse(res, errorConfig);
-  // };
-  //
-  // // Verify token
-  // Promise.resolve(jwtAuth.verifyToken(token, 'pepoApi').then(jwtOnResolve, jwtOnReject)).catch(function(err) {
-  //   const errorObject = responseHelper.error({
-  //     internal_error_identifier: 'jwt_decide_failed:a_2',
-  //     api_error_identifier: 'jwt_decide_failed',
-  //     debug_options: { token: token }
-  //   });
-  //   createErrorLogsEntry.perform(errorObject, ErrorLogsConstants.lowSeverity);
-  //   logger.error('a_2', 'JWT Decide Failed', { token: token });
-  //
-  //   return responseHelper
-  //     .error({
-  //       internal_error_identifier: 'a_2',
-  //       api_error_identifier: 'something_went_wrong',
-  //       debug_options: {}
-  //     })
-  //     .renderResponse(res, errorConfig);
-  // });
-  req.decodedParams = sanitizer.sanitizeParams(req.body);
-  return next();
+  // Set the decoded params in the re and call the next in control flow.
+  const jwtOnResolve = function(reqParams) {
+    console.log('---------verifyToken-----', JSON.stringify(reqParams));
+    req.decodedParams = sanitizer.sanitizeParams(reqParams.data);
+    // req.decodedParams['app_validated_api_name'] = apiName.allInternalRoutes;
+    // Validation passed.
+    return next();
+  };
+
+  // send error, if token is invalid
+  const jwtOnReject = function(err) {
+    return responseHelper
+      .error({
+        internal_error_identifier: 'a_1',
+        api_error_identifier: 'invalid_or_expired_jwt_token',
+        debug_options: {}
+      })
+      .renderResponse(res, errorConfig);
+  };
+
+  // Verify token
+  Promise.resolve(jwtAuth.verifyToken(token, 'pepoApi').then(jwtOnResolve, jwtOnReject)).catch(function(err) {
+    const errorObject = responseHelper.error({
+      internal_error_identifier: 'jwt_decide_failed:a_2',
+      api_error_identifier: 'jwt_decide_failed',
+      debug_options: { token: token }
+    });
+    createErrorLogsEntry.perform(errorObject, ErrorLogsConstants.lowSeverity);
+    logger.error('a_2', 'JWT Decide Failed', { token: token });
+
+    return responseHelper
+      .error({
+        internal_error_identifier: 'a_2',
+        api_error_identifier: 'something_went_wrong',
+        debug_options: {}
+      })
+      .renderResponse(res, errorConfig);
+  });
 };
 
 // Set request debugging/logging details to shared namespace

@@ -38,15 +38,13 @@ class Executor {
     let serviceToUse;
     if (resource === '/compress-video') {
       serviceToUse = '/app/services/CompressVideo';
+    } else if (resource === '/resize-image') {
+      serviceToUse = '/app/services/resizeAndUpload';
     }
-
-    console.log('typeof(body): ', typeof body);
 
     if (body && typeof body === 'string') {
       body = JSON.parse(body);
     }
-
-    console.log('body: ', body);
 
     return {
       params: queryParams,
@@ -85,8 +83,6 @@ class Executor {
 
     let Service = require(rootPrefix + reqData.serviceToUse);
 
-    console.log('Service: ', JSON.stringify(Service));
-
     return new Service(serviceParams).perform();
 
     // return reqData;
@@ -104,8 +100,8 @@ exports.handler = async (event) => {
   return {
     statusCode: 200,
     headers: {
-      'x-pepo-header': 't123'
+      'Content-Type': 'application/json'
     },
-    body: responseBody
+    body: JSON.stringify(responseBody)
   };
 };
