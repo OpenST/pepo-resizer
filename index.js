@@ -35,21 +35,25 @@ class Executor {
     let body = oThis.event.body;
     let httpMethod = oThis.event.httpMethod;
 
-    let serviceToUse;
-    if (resource === '/compress-video') {
-      serviceToUse = '/app/services/CompressVideo';
-    } else if (resource === '/resize-image') {
-      serviceToUse = '/app/services/resizeAndUpload';
-    }
-
     if (body && typeof body === 'string') {
       body = JSON.parse(body);
     }
 
+    let serviceToUse, serviceParams;
+    if (resource === '/compress-video') {
+      serviceToUse = '/app/services/CompressVideo';
+      serviceParams = body;
+    } else if (resource === '/resize-image') {
+      serviceToUse = '/app/services/resizeAndUpload';
+      serviceParams = body;
+    }
+
+    console.log('serviceParams: ', serviceParams);
+    console.log('serviceToUse: ', serviceToUse);
+
     return {
-      params: queryParams,
-      serviceToUse: serviceToUse,
-      body: body
+      serviceParams: serviceParams,
+      serviceToUse: serviceToUse
     };
   }
 
@@ -66,7 +70,7 @@ class Executor {
     const apiParamsValidatorRsp = await new ApiParamsValidator({
       api_name: apiName.compressVideo,
       api_version: apiVersions.internal,
-      api_params: reqData.body
+      api_params: reqData.serviceParams
     }).perform();
 
     let serviceParams = apiParamsValidatorRsp.data.sanitisedApiParams;
