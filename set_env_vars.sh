@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Core ENV Details
 export PR_ENVIRONMENT='development'
 export PR_PORT=9000
