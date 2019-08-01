@@ -34,7 +34,7 @@ class CoreConstants {
   }
 
   get videoTempPath() {
-    return process.env.PR_SHARED_DIR || '';
+    return process.env.PR_SHARED_DIR || '/tmp/';
   }
 }
 

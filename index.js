@@ -53,14 +53,6 @@ class Executor {
     };
   }
 
-  async handleResponse(response) {
-    if (response.isFailure() && onServiceFailure) {
-      await onServiceFailure(response);
-    }
-
-    response.renderResponse(res, errorConfig);
-  }
-
   /**
    * perform
    *
@@ -79,8 +71,6 @@ class Executor {
 
     let serviceParams = apiParamsValidatorRsp.data.sanitisedApiParams;
 
-    console.log('serviceParams: ', serviceParams);
-
     let Service = require(rootPrefix + reqData.serviceToUse);
 
     return new Service(serviceParams).perform();
@@ -90,12 +80,10 @@ class Executor {
 }
 
 exports.handler = async (event) => {
-  console.log('event: ', event);
+  // console.log('event: ', event);
 
   let executor = new Executor(event);
   let responseBody = await executor.perform();
-
-  console.log('response: ', response);
 
   return {
     statusCode: 200,
