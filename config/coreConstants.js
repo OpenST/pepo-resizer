@@ -34,11 +34,7 @@ class CoreConstants {
   }
 
   get videoTempPath() {
-    if (this.environment === 'development') {
-      return '';
-    } else {
-      return '/mnt/pepo/apps/pepoImageResize/shared/';
-    }
+    return process.env.PR_SHARED_DIR || '';
   }
 }
 

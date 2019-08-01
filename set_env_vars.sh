@@ -2,6 +2,7 @@
 export PR_ENVIRONMENT='development'
 export PR_PORT=9000
 export PR_DEBUG_ENABLED='1';
+export PR_SHARED_DIR='';
 
 export PR_INTERNAL_API_SECRET_KEY='asdfghjkl'
 
