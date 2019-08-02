@@ -9,8 +9,8 @@
 const rootPrefix = '.',
   apiName = require(rootPrefix + '/lib/globalConstant/apiName'),
   apiVersions = require(rootPrefix + '/lib/globalConstant/apiVersions'),
-  ApiParamsValidator = require(rootPrefix + '/lib/validators/ApiParams');
-
+  ApiParamsValidator = require(rootPrefix + '/lib/validators/ApiParams'),
+  routeHelper = require(rootPrefix + '/routes/helper');
 class Executor {
   /**
    * @param {Object} event
@@ -39,22 +39,24 @@ class Executor {
       body = JSON.parse(body);
     }
 
-    let serviceToUse, serviceParams;
-    if (resource === '/compress-video') {
-      serviceToUse = '/app/services/CompressVideo';
-      serviceParams = body;
-    } else if (resource === '/resize-image') {
-      serviceToUse = '/app/services/resizeAndUpload';
-      serviceParams = body;
+    let actionParams = {
+      req: {
+        decodedParams: {}
+      }
+    };
+    Object.assign(actionParams.req.decodedParams, body, { apiVersion: apiVersions.internal });
+
+    if (resource === '/resize-image') {
+      actionParams.serviceToUse = '/app/services/resizeAndUpload';
+      actionParams.errorCode = 'r_it_1';
+      actionParams.req.decodedParams.apiName = apiName.resizeAndUpload;
+    } else if (resource === '/compress-video') {
+      actionParams.serviceToUse = '/app/services/CompressVideo';
+      actionParams.errorCode = 'r_it_2';
+      actionParams.req.decodedParams.apiName = apiName.compressVideo;
     }
 
-    console.log('serviceParams: ', serviceParams);
-    console.log('serviceToUse: ', serviceToUse);
-
-    return {
-      serviceParams: serviceParams,
-      serviceToUse: serviceToUse
-    };
+    return actionParams;
   }
 
   /**
@@ -65,21 +67,22 @@ class Executor {
   async perform() {
     const oThis = this;
 
-    let reqData = oThis.getResourceAndParamsForAction();
+    let actionParams = oThis.getResourceAndParamsForAction();
 
-    const apiParamsValidatorRsp = await new ApiParamsValidator({
-      api_name: apiName.compressVideo,
-      api_version: apiVersions.internal,
-      api_params: reqData.serviceParams
-    }).perform();
+    console.log('actionParams: ', actionParams);
 
-    let serviceParams = apiParamsValidatorRsp.data.sanitisedApiParams;
-
-    let Service = require(rootPrefix + reqData.serviceToUse);
-
-    return new Service(serviceParams).perform();
-
-    // return reqData;
+    return Promise.resolve(
+      routeHelper.perform(
+        actionParams.req,
+        {},
+        null,
+        actionParams.serviceToUse,
+        actionParams.errorCode,
+        null,
+        null,
+        null
+      )
+    );
   }
 }
 
@@ -88,6 +91,8 @@ exports.handler = async (event) => {
 
   let executor = new Executor(event);
   let responseBody = await executor.perform();
+
+  console.log('responseBody: ', responseBody);
 
   return {
     statusCode: 200,
