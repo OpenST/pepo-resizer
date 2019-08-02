@@ -20,7 +20,12 @@ function run(){
 
     file="${prevDir}/lambda_${pkg_id}.zip"
 
-    package_file="package_${pkg_id}.json"
+    package_file="${actualDir}/package_${pkg_id}.json"
+
+    if [[ ! -f ${package_file} ]]; then
+        echo "Package file [ package_${pkg_id}.json ] does not exists!"
+        exit 1
+    fi
 
     cp -r ${actualDir}/${package_file} ${actualDir}/package.json
 
