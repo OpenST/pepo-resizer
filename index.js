@@ -71,17 +71,15 @@ class Executor {
 
     console.log('actionParams: ', actionParams);
 
-    return Promise.resolve(
-      routeHelper.perform(
-        actionParams.req,
-        {},
-        null,
-        actionParams.serviceToUse,
-        actionParams.errorCode,
-        null,
-        null,
-        null
-      )
+    return routeHelper.perform(
+      actionParams.req,
+      {},
+      null,
+      actionParams.serviceToUse,
+      actionParams.errorCode,
+      null,
+      null,
+      null
     );
   }
 }
