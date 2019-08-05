@@ -123,7 +123,15 @@ class RoutesHelper {
 
     Service = require(rootPrefix + serviceGetter);
 
-    return new Service(req.serviceParams).perform().then(handleResponse);
+    if (res.isLambda) {
+      return new Promise(function(resolve, reject) {
+        new Service(req.serviceParams).perform().then(function(response) {
+          return resolve(response);
+        });
+      });
+    } else {
+      return new Service(req.serviceParams).perform().then(handleResponse);
+    }
   }
 }
 

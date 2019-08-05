@@ -73,7 +73,7 @@ class Executor {
 
     return routeHelper.perform(
       actionParams.req,
-      {},
+      { isLambda: true },
       null,
       actionParams.serviceToUse,
       actionParams.errorCode,
