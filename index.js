@@ -90,7 +90,7 @@ exports.handler = async (event) => {
   let executor = new Executor(event);
   let responseBody = await executor.perform();
 
-  console.log('responseBody: ', responseBody);
+  // console.log('responseBody: ', responseBody);
 
   return {
     statusCode: 200,
