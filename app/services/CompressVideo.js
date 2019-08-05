@@ -98,6 +98,7 @@ class CompressVideo {
         .size(sizeToCompress)
         .on('start', function(commandLine) {
           logger.info('Spawned FFmpeg with command: ', commandLine);
+          return onResolve(responseHelper.successWithData({}));
         })
         .on('error', function(err) {
           logger.info('Compression failed for size: ', sizeToCompress, err);
