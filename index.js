@@ -10,6 +10,7 @@ const rootPrefix = '.',
   apiName = require(rootPrefix + '/lib/globalConstant/apiName'),
   apiVersions = require(rootPrefix + '/lib/globalConstant/apiVersions'),
   ApiParamsValidator = require(rootPrefix + '/lib/validators/ApiParams'),
+  sanitizer = require(rootPrefix + '/helpers/sanitizer'),
   routeHelper = require(rootPrefix + '/routes/helper');
 class Executor {
   /**
@@ -30,24 +31,13 @@ class Executor {
   getResourceAndParamsForAction() {
     const oThis = this;
 
-    // let resource = oThis.event.resource;
-    // let queryParams = oThis.event.queryStringParameters;
-    // let body = oThis.event.body;
-    // let httpMethod = oThis.event.httpMethod;
-    //
-
-    // console.log('Event: ', oThis.event);
-    // console.log('body: ', oThis.body);
-    // if (body && typeof body === 'string') {
-    //   body = JSON.parse(body);
-    // }
-
     let actionParams = {
       req: {
         decodedParams: {}
       }
     };
-    Object.assign(actionParams.req.decodedParams, oThis.event, { apiVersion: apiVersions.internal });
+    actionParams.req.decodedParams = sanitizer.sanitizeParams(oThis.event);
+    Object.assign(actionParams.req.decodedParams, { apiVersion: apiVersions.internal });
 
     if (oThis.event.resource === 'resize-image') {
       actionParams.serviceToUse = '/app/services/resizeAndUpload';

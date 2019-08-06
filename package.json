@@ -12,15 +12,10 @@
     "aws-sdk": "2.373.0",
     "bignumber.js": "9.0.0",
     "fluent-ffmpeg": "2.1.2",
-    "jsonwebtoken": "8.4.0",
-    "morgan": "1.9.1",
     "request": "2.88.0",
     "sanitize-html": "1.19.3",
     "sharp": "0.22.1",
-    "body-parser": "1.18.3",
-    "continuation-local-storage": "3.2.1",
-    "express": "4.16.4",
-    "helmet": "3.15.0"
+    "body-parser": "1.18.3"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
