@@ -44,7 +44,7 @@ class Executor {
         decodedParams: {}
       }
     };
-    Object.assign(actionParams.req.decodedParams, body, { apiVersion: apiVersions.internal });
+    Object.assign(actionParams.req.decodedParams, JSON.parse(oThis.event), { apiVersion: apiVersions.internal });
 
     if (oThis.event.resource === 'resize-image') {
       actionParams.serviceToUse = '/app/services/resizeAndUpload';
@@ -85,7 +85,7 @@ class Executor {
 }
 
 exports.handler = async (event) => {
-   console.log('event: ', event);
+  console.log('event: ', event);
 
   let executor = new Executor(event);
   let responseBody = await executor.perform();
