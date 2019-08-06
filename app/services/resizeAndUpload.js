@@ -82,7 +82,7 @@ class ResizeAndUpload {
     await oThis._validateAndSanitizeParams();
 
     // Request has been taken, in background image would be resized.
-    oThis._resizeImages();
+    await oThis._resizeImages();
 
     return responseHelper.successWithData({});
   }
