@@ -81,15 +81,22 @@ class ResizeAndUpload {
 
     await oThis._validateAndSanitizeParams();
 
-    await oThis._downloadSourceImage();
+    // Request has been taken, in background image would be resized.
+    oThis._resizeImages();
 
-    // let path = '/Users/alpeshmodi/Documents/pepo/pepo-resizer/tmp.jpeg';
-    // fs.writeFile(path, oThis.originalImgBlob, function(err) {
-    //   if (err) {
-    //     console.log('image write error.');
-    //     console.log(err);
-    //   }
-    // });
+    return responseHelper.successWithData({});
+  }
+
+  /**
+   * Resize images and upload to s3
+   *
+   * @returns {Promise<*|result>}
+   * @private
+   */
+  async _resizeImages() {
+    const oThis = this;
+
+    await oThis._downloadSourceImage();
 
     await oThis._resizeAndSaveImages();
 
@@ -226,6 +233,7 @@ class ResizeAndUpload {
       let imageMeta = await sharp(resizedImageBlob).metadata();
 
       await uploadBodyToS3.perform({
+        metaData: imageMeta,
         bucket: oThis.uploadDetails['bucket'],
         acl: oThis.uploadDetails['acl'],
         s3Region: oThis.uploadDetails['region'],
