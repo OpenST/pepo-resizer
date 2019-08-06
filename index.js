@@ -35,6 +35,9 @@ class Executor {
     let body = oThis.event.body;
     // let httpMethod = oThis.event.httpMethod;
     //
+
+    console.log('Event: ', oThis.event);
+    console.log('body: ', oThis.body);
     if (body && typeof body === 'string') {
       body = JSON.parse(body);
     }
