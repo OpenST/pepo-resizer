@@ -85,7 +85,7 @@ class Executor {
 }
 
 exports.handler = async (event) => {
-  // console.log('event: ', event);
+   console.log('event: ', event);
 
   let executor = new Executor(event);
   let responseBody = await executor.perform();
