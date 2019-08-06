@@ -32,25 +32,25 @@ class Executor {
 
     // let resource = oThis.event.resource;
     // let queryParams = oThis.event.queryStringParameters;
-    // let body = oThis.event.body;
+    let body = oThis.event.body;
     // let httpMethod = oThis.event.httpMethod;
     //
-    // if (body && typeof body === 'string') {
-    //   body = JSON.parse(body);
-    // }
+    if (body && typeof body === 'string') {
+      body = JSON.parse(body);
+    }
 
     let actionParams = {
       req: {
         decodedParams: {}
       }
     };
-    Object.assign(actionParams.req.decodedParams, JSON.parse(oThis.event), { apiVersion: apiVersions.internal });
+    Object.assign(actionParams.req.decodedParams, body, { apiVersion: apiVersions.internal });
 
-    if (oThis.event.resource === 'resize-image') {
+    if (body.resource === 'resize-image') {
       actionParams.serviceToUse = '/app/services/resizeAndUpload';
       actionParams.errorCode = 'r_it_1';
       actionParams.req.decodedParams.apiName = apiName.resizeAndUpload;
-    } else if (oThis.event.resource === 'compress-video') {
+    } else if (body.resource === 'compress-video') {
       actionParams.serviceToUse = '/app/services/CompressVideo';
       actionParams.errorCode = 'r_it_2';
       actionParams.req.decodedParams.apiName = apiName.compressVideo;
