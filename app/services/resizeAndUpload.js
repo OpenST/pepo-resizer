@@ -226,7 +226,7 @@ class ResizeAndUpload {
         if ((width && width > oThis.originalImageMeta.width) || (height && height > oThis.originalImageMeta.height)) {
           return onResolve();
         }
-        resizeImageObj = await sharp(oThis.originalImgBlob).resize({ width: width, height: height, fit: 'inside' });
+        resizeImageObj = await sharp(oThis.originalImgBlob).withMetadata().resize({ width: width, height: height, fit: 'inside' });
       }
 
       let resizedImageBlob = await resizeImageObj.jpeg({ quality: oThis.imageQuality }).toBuffer();
