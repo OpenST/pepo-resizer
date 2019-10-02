@@ -37,7 +37,7 @@ class CompressVideo {
     oThis.thumbnailDetails = params.thumbnail_details;
     oThis.uploadDetails = params.upload_details;
 
-    oThis.contentType = 'image/jpeg';
+    oThis.contentType = oThis.thumbnailDetails.content_type || 'image/jpeg';
   }
 
   async perform() {
