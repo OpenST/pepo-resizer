@@ -43,12 +43,11 @@ class CompressVideo {
   async perform() {
     const oThis = this;
 
-    let promises = [];
-    let compressPromise = oThis
+    await oThis
       ._takeScreenshotAndUpload()
       .then(function(response) {
         if (response.isSuccess()) {
-          logger.win('jit gaye...');
+          logger.win('Thumbnail uploaded successfully for video ', oThis.videoSourceUrl);
         } else {
           logger.error('Error while compressing: ', response.error);
         }
@@ -56,12 +55,6 @@ class CompressVideo {
       .catch(function(err) {
         logger.error('Exception while compressing: ', err);
       });
-
-    promises.push(compressPromise);
-
-    if (promises.length > 0) {
-      await Promise.all(promises);
-    }
 
     return responseHelper.successWithData({});
   }
@@ -74,7 +67,7 @@ class CompressVideo {
    */
   _takeScreenshotAndUpload() {
     const oThis = this,
-      fileName = 'tempTh-alpesh.jpg',
+      fileName = oThis.videoSourceUrl.split('/').pop() + '_thumbnail.jpg',
       localFilePath = coreConstants.tempFilePath + fileName;
 
     return new Promise(function(onResolve, onReject) {
@@ -86,7 +79,7 @@ class CompressVideo {
           logger.info('Spawned FFmpeg with command: ', commandLine);
         })
         .on('end', async function() {
-          console.log('11screenshots were saved', Date.now());
+          console.log('screenshots were saved', Date.now());
           await oThis._uploadFile(localFilePath, oThis.contentType, oThis.thumbnailDetails.file_path);
           onResolve(responseHelper.successWithData({}));
         })
