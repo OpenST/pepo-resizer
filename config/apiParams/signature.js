@@ -9,7 +9,7 @@ const rootPrefix = '../..',
 
 // Declare variables.
 const signature = {
-  resizeAndUpload: {
+  [apiName.resizeAndUpload]: {
     mandatory: [
       {
         parameter: 'source_url',
@@ -31,7 +31,7 @@ const signature = {
       }
     ]
   },
-  compressVideo: {
+  [apiName.compressVideo]: {
     mandatory: [
       {
         parameter: 'source_url',
@@ -43,6 +43,23 @@ const signature = {
       },
       {
         parameter: 'compression_data',
+        validatorMethods: ['validateObject']
+      }
+    ],
+    optional: []
+  },
+  [apiName.createVideoThumbnail]: {
+    mandatory: [
+      {
+        parameter: 'video_source_url',
+        validatorMethods: ['validateString']
+      },
+      {
+        parameter: 'upload_details',
+        validatorMethods: ['validateObject']
+      },
+      {
+        parameter: 'thumbnail_details',
         validatorMethods: ['validateObject']
       }
     ],
