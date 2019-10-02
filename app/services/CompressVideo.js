@@ -24,9 +24,9 @@ class CompressVideo {
    * @param {Object} params.compression_data - Details of compression
    * @param {Object} params.compression_data.width - resize width
    * @param {Object} params.compression_data.height - resize height
-   * @param {Object} params.compression_data.file_path - path where resized image to be saved
-   * @param {Object} params.compression_data.content_type - content_type if resized image
-   * @param {Object} params.compression_data.s3_url - complete path where resized image found
+   * @param {Object} params.compression_data.file_path - path where resized video to be saved
+   * @param {Object} params.compression_data.content_type - content_type if resized video
+   * @param {Object} params.compression_data.s3_url - complete path where resized video found
    *
    * @param {Object} params.upload_details - basic upload details
    * @param {String} params.upload_details.bucket - bucket where resized video to be saved
@@ -86,7 +86,7 @@ class CompressVideo {
   _compressAndUpload(compressionSize) {
     const oThis = this,
       sizeToCompress = compressionSize.width + 'x?',
-      fileName = coreConstants.videoTempPath + sizeToCompress + '-' + oThis.sourceUrl.split('/').pop();
+      fileName = coreConstants.tempFilePath + sizeToCompress + '-' + oThis.sourceUrl.split('/').pop();
 
     return new Promise(function(onResolve, onReject) {
       let command = new Ffmpeg({
@@ -112,10 +112,11 @@ class CompressVideo {
         })
         .on('end', function() {
           logger.info('Compression completed for size: ', sizeToCompress);
-          let dimensionsResp = {};
+          let dimensionsResp = null;
           oThis._fetchVideoDimensions(fileName).then(function(response) {
             if (response.isSuccess()) {
               const stats = fs.statSync(fileName);
+              dimensionsResp = dimensionsResp || {};
               dimensionsResp.size = stats.size;
               dimensionsResp.width = response.data.width;
               dimensionsResp.height = response.data.height;
@@ -124,6 +125,7 @@ class CompressVideo {
               ._uploadFile(fileName, compressionSize.content_type, compressionSize.file_path, dimensionsResp)
               .then(function(resp) {
                 if (resp.isSuccess()) {
+                  dimensionsResp = dimensionsResp || {};
                   dimensionsResp.url = compressionSize.s3_url;
                 } else {
                   return onResolve(resp);

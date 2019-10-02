@@ -33,7 +33,7 @@ class CoreConstants {
     return process.env.PR_S3_AWS_REGION;
   }
 
-  get videoTempPath() {
+  get tempFilePath() {
     return process.env.PR_SHARED_DIR || '/tmp/';
   }
 }
