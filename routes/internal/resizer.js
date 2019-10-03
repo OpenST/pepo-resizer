@@ -23,4 +23,10 @@ router.post('/video/compress', function(req, res, next) {
   Promise.resolve(routeHelper.perform(req, res, next, '/app/services/CompressVideo', 'r_it_2', null, null, null));
 });
 
+router.post('/video/extract-thumbnail', function(req, res, next) {
+  req.decodedParams.apiName = apiName.createVideoThumbnail;
+
+  Promise.resolve(routeHelper.perform(req, res, next, '/app/services/CreateThumbnail', 'r_it_3', null, null, null));
+});
+
 module.exports = router;

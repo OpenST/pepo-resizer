@@ -47,6 +47,10 @@ class Executor {
       actionParams.serviceToUse = '/app/services/CompressVideo';
       actionParams.errorCode = 'r_it_2';
       actionParams.req.decodedParams.apiName = apiName.compressVideo;
+    } else if (oThis.event.resource === 'extract-video-thumbnail') {
+      actionParams.serviceToUse = '/app/services/CreateThumbnail';
+      actionParams.errorCode = 'r_it_3';
+      actionParams.req.decodedParams.apiName = apiName.createVideoThumbnail;
     }
 
     return actionParams;
