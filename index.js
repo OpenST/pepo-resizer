@@ -40,7 +40,7 @@ class Executor {
     Object.assign(actionParams.req.decodedParams, { apiVersion: apiVersions.internal });
 
     if (oThis.event.resource === 'resize-image') {
-      actionParams.serviceToUse = '/app/services/resizeAndUpload';
+      actionParams.serviceToUse = '/app/services/ResizeAndUpload';
       actionParams.errorCode = 'r_it_1';
       actionParams.req.decodedParams.apiName = apiName.resizeAndUpload;
     } else if (oThis.event.resource === 'compress-video') {
