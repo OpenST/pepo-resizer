@@ -15,25 +15,26 @@ const mergedVideoSize = '720X1280',
   contentType = 'video/mp4';
 
 /**
- * Class to compress video
+ * Class to merge video segments.
  *
+ * @class MergeVideoSegments
  */
 class MergeVideoSegments {
   /**
-   * constructor
+   * Constructor to merge video segments.
    *
-   * @param {Array} params.segment_urls - Array of segment videos url
-   * @param {String} params.merged_video_s3_url - url where merged video to be uploaded.
+   * @param {array} params.segment_urls - Array of segment videos url
+   * @param {string} params.merged_video_s3_url - url where merged video to be uploaded.
+   * @param {object} params.upload_details - basic upload details
+   * @param {string} params.upload_details.bucket - bucket where merged video to be saved
+   * @param {string} params.upload_details.acl - video permissions
+   * @param {string} params.upload_details.region - s3 region where merged video to be saved
    *
-   * @param {Object} params.upload_details - basic upload details
-   * @param {String} params.upload_details.bucket - bucket where merged video to be saved
-   * @param {String} params.upload_details.acl - video permissions
-   * @param {String} params.upload_details.region - s3 region where merged video to be saved
-   *
+   * @constructor
    */
   constructor(params) {
     const oThis = this;
-    console.log('input parameters --------------------------------------- ', params);
+
     oThis.segmentUrls = params.segment_urls;
     oThis.mergedVideoS3Url = params.merged_video_s3_url;
     oThis.uploadDetails = params.upload_details;
@@ -65,14 +66,15 @@ class MergeVideoSegments {
    * @private
    */
   _mergeAndUpload() {
-    const oThis = this,
-      mergedVideoS3UrlPartsArry = oThis.mergedVideoS3Url.split('.');
+    const oThis = this;
 
+    const mergedVideoS3UrlPartsArray = oThis.mergedVideoS3Url.split('.');
+
+    // Pop will remove last element.
+    mergedVideoS3UrlPartsArray.pop();
     // All compress videos are mp4 format.
-    // pop will remove last element
-    mergedVideoS3UrlPartsArry.pop();
-    mergedVideoS3UrlPartsArry.push('mp4');
-    oThis.mergedVideoS3Url = oThis.mergedVideoS3Url.join('.');
+    mergedVideoS3UrlPartsArray.push('mp4');
+    oThis.mergedVideoS3Url = mergedVideoS3UrlPartsArray.join('.');
 
     const fileName = coreConstants.tempFilePath + oThis.mergedVideoS3Url.split('/').pop();
 
