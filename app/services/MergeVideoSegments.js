@@ -11,116 +11,85 @@ const rootPrefix = '../..',
   uploadBodyToS3 = require(rootPrefix + '/lib/s3/UploadBody'),
   coreConstants = require(rootPrefix + '/config/coreConstants');
 
-const contentType = 'video/mp4';
+const mergedVideoSize = '720X1280',
+  contentType = 'video/mp4';
+
 /**
  * Class to compress video
  *
  */
-class CompressVideo {
+class MergeVideoSegments {
   /**
    * constructor
    *
-   * @param {String} params.source_url - Source image to be uploaded
-   *
-   * @param {Object} params.compression_data - Details of compression
-   * @param {Object} params.compression_data.width - resize width
-   * @param {Object} params.compression_data.height - resize height
-   * @param {Object} params.compression_data.file_path - path where resized video to be saved
-   * @param {Object} params.compression_data.content_type - content_type if resized video
-   * @param {Object} params.compression_data.s3_url - complete path where resized video found
+   * @param {Array} params.segment_urls - Array of segment videos url
+   * @param {String} params.merged_video_s3_url - url where merged video to be uploaded.
    *
    * @param {Object} params.upload_details - basic upload details
-   * @param {String} params.upload_details.bucket - bucket where resized video to be saved
+   * @param {String} params.upload_details.bucket - bucket where merged video to be saved
    * @param {String} params.upload_details.acl - video permissions
-   * @param {String} params.upload_details.region - s3 region where resized video to be saved
+   * @param {String} params.upload_details.region - s3 region where merged video to be saved
    *
    */
   constructor(params) {
     const oThis = this;
-    oThis.sourceUrl = params.source_url;
-    oThis.compressionSizes = params.compression_data;
+    console.log('input parameters --------------------------------------- ', params);
+    oThis.segmentUrls = params.segment_urls;
+    oThis.mergedVideoS3Url = params.merged_video_s3_url;
     oThis.uploadDetails = params.upload_details;
-    oThis.compressedData = {};
-    oThis.compressionErrors = {};
   }
 
   async perform() {
     const oThis = this;
 
-    let promises = [];
-    for (let size in oThis.compressionSizes) {
-      let compressPromise = oThis
-        ._compressAndUpload(oThis.compressionSizes[size])
-        .then(function(response) {
-          if (response.isSuccess()) {
-            oThis.compressedData[size] = response.data;
-          } else {
-            oThis.compressionErrors[size] = response.error;
-            logger.error('Error while compressing: ', response.error);
-          }
-        })
-        .catch(function(err) {
-          oThis.compressionErrors[size] = err;
-          logger.error('Exception while compressing: ', err);
-        });
+    await oThis
+      ._mergeAndUpload()
+      .then(function(response) {
+        if (response.isSuccess()) {
+          logger.step('Video merged and uploaded to ', oThis.mergedVideoS3Url);
+        } else {
+          logger.error('Error while merging: ', response.error);
+        }
+      })
+      .catch(function(err) {
+        logger.error('Exception while merging: ', err);
+      });
 
-      promises.push(compressPromise);
-    }
-
-    if (promises.length > 0) {
-      await Promise.all(promises);
-    }
-
-    return responseHelper.successWithData({
-      compressedData: oThis.compressedData,
-      compressionErrors: oThis.compressionErrors
-    });
+    return responseHelper.successWithData({});
   }
 
   /**
    * Compress video to given size and upload it to s3
    *
-   * @param compressionSize
    * @returns {Promise<any>}
    * @private
    */
-  _compressAndUpload(compressionSize) {
+  _mergeAndUpload() {
     const oThis = this,
-      sizeToCompress = compressionSize.width + 'x?',
-      filenamePart = oThis.sourceUrl.split('/').pop(),
-      filenamePartArr = filenamePart.split('.');
+      mergedVideoS3UrlPartsArry = oThis.mergedVideoS3Url.split('.');
 
     // All compress videos are mp4 format.
     // pop will remove last element
-    filenamePartArr.pop();
-    filenamePartArr.push('mp4');
+    mergedVideoS3UrlPartsArry.pop();
+    mergedVideoS3UrlPartsArry.push('mp4');
+    oThis.mergedVideoS3Url = oThis.mergedVideoS3Url.join('.');
 
-    const fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePartArr.join('.');
+    const fileName = coreConstants.tempFilePath + oThis.mergedVideoS3Url.split('/').pop();
 
     return new Promise(function(onResolve, onReject) {
-      let command = new Ffmpeg({
-        source: oThis.sourceUrl,
-        timeout: 240
-      })
-        .withOptions(['-c:v libx264', '-preset slow', '-crf 28', '-ss 00:00:00', '-t 00:00:30'])
+      let ffmpegObj = new Ffmpeg();
+
+      for (let index = 0; index < oThis.segmentUrls.length; index++) {
+        ffmpegObj = ffmpegObj.input(oThis.segmentUrls[index]);
+      }
+
+      ffmpegObj
         .outputOptions('-movflags faststart')
-        .size(sizeToCompress)
         .on('start', function(commandLine) {
           logger.info('Spawned FFmpeg with command: ', commandLine);
-          // return onResolve(responseHelper.successWithData({}));
-        })
-        .on('error', function(err) {
-          logger.info('Compression failed for size: ', sizeToCompress, err);
-          return onResolve(
-            responseHelper.error({
-              internal_error_identifier: 'a_s_cv_1',
-              api_error_identifier: 'invalid',
-              debug_options: err
-            })
-          );
         })
         .on('end', function() {
-          logger.info('Compression completed for size: ', sizeToCompress);
+          logger.info('Merging completed for file: ', oThis.mergedVideoS3Url);
           let dimensionsResp = null;
           oThis._fetchVideoDimensions(fileName).then(function(response) {
             if (response.isSuccess()) {
@@ -130,19 +99,22 @@ class CompressVideo {
               dimensionsResp.width = response.data.width;
               dimensionsResp.height = response.data.height;
             }
-            oThis._uploadFile(fileName, contentType, compressionSize.file_path, dimensionsResp).then(function(resp) {
+            oThis._uploadFile(fileName, contentType, oThis.mergedVideoS3Url, dimensionsResp).then(function(resp) {
               if (resp.isSuccess()) {
-                dimensionsResp = dimensionsResp || {};
-                dimensionsResp.url = compressionSize.s3_url;
+                logger.step('Uploaded successfully to the path ', oThis.mergedVideoS3Url);
               } else {
+                logger.error('merged upload Failed ', resp);
                 return onResolve(resp);
               }
               fs.unlinkSync(fileName);
-              return onResolve(responseHelper.successWithData(dimensionsResp));
+              return onResolve(responseHelper.successWithData());
             });
           });
         })
-        .saveToFile(fileName);
+        .on('error', function(err) {
+          logger.error('an error happened: ' + err);
+        })
+        .mergeToFile(fileName);
     });
   }
 
@@ -205,4 +177,4 @@ class CompressVideo {
   }
 }
 
-module.exports = CompressVideo;
+module.exports = MergeVideoSegments;

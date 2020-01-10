@@ -23,6 +23,12 @@ router.post('/video/compress', function(req, res, next) {
   Promise.resolve(routeHelper.perform(req, res, next, '/app/services/CompressVideo', 'r_it_2', null, null, null));
 });
 
+router.post('/video/merge-video-segments', function(req, res, next) {
+  req.decodedParams.apiName = apiName.mergeVideoSegments;
+
+  Promise.resolve(routeHelper.perform(req, res, next, '/app/services/MergeVideoSegments', 'r_it_4', null, null, null));
+});
+
 router.post('/video/extract-thumbnail', function(req, res, next) {
   req.decodedParams.apiName = apiName.createVideoThumbnail;
 
