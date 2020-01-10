@@ -41,19 +41,19 @@ class Executor {
 
     if (oThis.event.resource === 'resize-image') {
       actionParams.serviceToUse = '/app/services/ResizeAndUpload';
-      actionParams.errorCode = 'r_it_1';
+      actionParams.errorCode = 'r_i_1';
       actionParams.req.decodedParams.apiName = apiName.resizeAndUpload;
     } else if (oThis.event.resource === 'compress-video') {
       actionParams.serviceToUse = '/app/services/CompressVideo';
-      actionParams.errorCode = 'r_it_2';
+      actionParams.errorCode = 'r_i_2';
       actionParams.req.decodedParams.apiName = apiName.compressVideo;
     } else if (oThis.event.resource === 'merge-video-segments') {
       actionParams.serviceToUse = '/app/services/MergeVideoSegments';
-      actionParams.errorCode = 'r_it_4';
+      actionParams.errorCode = 'r_i_3';
       actionParams.req.decodedParams.apiName = apiName.mergeVideoSegments;
     } else if (oThis.event.resource === 'extract-video-thumbnail') {
       actionParams.serviceToUse = '/app/services/CreateThumbnail';
-      actionParams.errorCode = 'r_it_3';
+      actionParams.errorCode = 'r_i_4';
       actionParams.req.decodedParams.apiName = apiName.createVideoThumbnail;
     }
 
