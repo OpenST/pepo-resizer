@@ -22,12 +22,12 @@ class MergeVideoSegments {
   /**
    * Constructor to merge video segments.
    *
-   * @param {array} params.segment_urls - Array of segment videos url
-   * @param {string} params.merged_video_s3_url - url where merged video to be uploaded.
-   * @param {object} params.upload_details - basic upload details
-   * @param {string} params.upload_details.bucket - bucket where merged video to be saved
-   * @param {string} params.upload_details.acl - video permissions
-   * @param {string} params.upload_details.region - s3 region where merged video to be saved
+   * @param {array} params.segment_urls - Array of segment videos url.
+   * @param {object} params.upload_details - basic upload details.
+   * @param {string} params.upload_details.bucket - bucket where merged video to be saved.
+   * @param {string} params.upload_details.acl - video permissions.
+   * @param {string} params.upload_details.region - s3 region where merged video to be saved.
+   * @param {string} params.upload_details.file_path - s3 relative path where merged video to be uploaded.
    *
    * @constructor
    */
@@ -35,8 +35,9 @@ class MergeVideoSegments {
     const oThis = this;
 
     oThis.segmentUrls = params.segment_urls;
-    oThis.mergedVideoS3Url = params.merged_video_s3_url;
     oThis.uploadDetails = params.upload_details;
+
+    oThis.uploadFilePath = params.upload_details.file_path;
   }
 
   async perform() {
@@ -46,7 +47,7 @@ class MergeVideoSegments {
       ._mergeAndUpload()
       .then(function(response) {
         if (response.isSuccess()) {
-          logger.step('Video merged and uploaded to ', oThis.mergedVideoS3Url);
+          logger.step('Video merged and uploaded to ', oThis.uploadFilePath);
         } else {
           logger.error('Error while merging: ', response.error);
         }
@@ -67,15 +68,15 @@ class MergeVideoSegments {
   _mergeAndUpload() {
     const oThis = this;
 
-    const mergedVideoS3UrlPartsArray = oThis.mergedVideoS3Url.split('.');
+    const mergedVideoS3UrlPartsArray = oThis.uploadFilePath.split('.');
 
     // Pop will remove last element.
     mergedVideoS3UrlPartsArray.pop();
     // All compress videos are mp4 format.
     mergedVideoS3UrlPartsArray.push('mp4');
-    oThis.mergedVideoS3Url = mergedVideoS3UrlPartsArray.join('.');
+    oThis.uploadFilePath = mergedVideoS3UrlPartsArray.join('.');
 
-    const fileName = coreConstants.tempFilePath + oThis.mergedVideoS3Url.split('/').pop();
+    const fileName = coreConstants.tempFilePath + oThis.uploadFilePath.split('/').pop();
 
     return new Promise(function(onResolve, onReject) {
       let ffmpegObj = new Ffmpeg();
@@ -91,7 +92,7 @@ class MergeVideoSegments {
           logger.info('Spawned FFmpeg with command: ', commandLine);
         })
         .on('end', function() {
-          logger.info('Merging completed for file: ', oThis.mergedVideoS3Url);
+          logger.info('Merging completed for file: ', oThis.uploadFilePath);
           let dimensionsResp = null;
           oThis._fetchVideoDimensions(fileName).then(function(response) {
             if (response.isSuccess()) {
@@ -101,9 +102,9 @@ class MergeVideoSegments {
               dimensionsResp.width = response.data.width;
               dimensionsResp.height = response.data.height;
             }
-            oThis._uploadFile(fileName, contentType, oThis.mergedVideoS3Url, dimensionsResp).then(function(resp) {
+            oThis._uploadFile(fileName, contentType, oThis.uploadFilePath, dimensionsResp).then(function(resp) {
               if (resp.isSuccess()) {
-                logger.step('Uploaded successfully to the path ', oThis.mergedVideoS3Url);
+                logger.step('Uploaded successfully to the path ', oThis.uploadFilePath);
               } else {
                 logger.error('merged upload Failed ', resp);
                 return onResolve(resp);
