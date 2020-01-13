@@ -86,7 +86,7 @@ class MergeVideoSegments {
 
       ffmpegObj
         .outputOptions('-movflags faststart')
-        .withOptions('-loglevel info -protocol_whitelist file,https,tcp,tls,crypto,async')
+        .withOptions('-protocol_whitelist file,https,tcp,tls,crypto,async')
         .on('start', function(commandLine) {
           logger.info('Spawned FFmpeg with command: ', commandLine);
         })
