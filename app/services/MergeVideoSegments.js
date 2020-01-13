@@ -11,8 +11,7 @@ const rootPrefix = '../..',
   uploadBodyToS3 = require(rootPrefix + '/lib/s3/UploadBody'),
   coreConstants = require(rootPrefix + '/config/coreConstants');
 
-const mergedVideoSize = '720X1280',
-  contentType = 'video/mp4';
+const contentType = 'video/mp4';
 
 /**
  * Class to merge video segments.
@@ -43,8 +42,6 @@ class MergeVideoSegments {
   async perform() {
     const oThis = this;
 
-    await oThis._listTempContents();
-
     await oThis
       ._mergeAndUpload()
       .then(function(response) {
@@ -61,31 +58,8 @@ class MergeVideoSegments {
     return responseHelper.successWithData({});
   }
 
-  async _listTempContents() {
-    const oThis = this;
-
-    console.log('=====Listing temp contents');
-
-    return new Promise(function(onResolve, onReject) {
-      fs.readdir('/tmp', function(err, files) {
-        //handling error
-        if (err) {
-          console.log('Unable to scan directory: ' + err);
-          return onResolve({});
-        }
-        //listing all files using forEach
-        files.forEach(function(file) {
-          // Do whatever you want to do with the file
-          console.log(file);
-        });
-
-        return onResolve({});
-      });
-    });
-  }
-
   /**
-   * Compress video to given size and upload it to s3
+   * Merge videos and upload to S3.
    *
    * @returns {Promise<any>}
    * @private
@@ -107,12 +81,12 @@ class MergeVideoSegments {
       let ffmpegObj = new Ffmpeg();
 
       for (let index = 0; index < oThis.segmentUrls.length; index++) {
-        ffmpegObj = ffmpegObj.input(oThis.segmentUrls[index]);
+        ffmpegObj = ffmpegObj.input(`async:${oThis.segmentUrls[index]}`);
       }
 
       ffmpegObj
         .outputOptions('-movflags faststart')
-        .withOptions('-loglevel debug')
+        .withOptions('-loglevel info -protocol_whitelist file,https,tcp,tls,crypto,async')
         .on('start', function(commandLine) {
           logger.info('Spawned FFmpeg with command: ', commandLine);
         })
