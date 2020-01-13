@@ -68,13 +68,13 @@ class MergeVideoSegments {
   _mergeAndUpload() {
     const oThis = this;
 
-    const mergedVideoS3UrlPartsArray = oThis.uploadFilePath.split('.');
+    const mergedVideoUploadFilePathPartsArray = oThis.uploadFilePath.split('.');
 
     // Pop will remove last element.
-    mergedVideoS3UrlPartsArray.pop();
+    mergedVideoUploadFilePathPartsArray.pop();
     // All compress videos are mp4 format.
-    mergedVideoS3UrlPartsArray.push('mp4');
-    oThis.uploadFilePath = mergedVideoS3UrlPartsArray.join('.');
+    mergedVideoUploadFilePathPartsArray.push('mp4');
+    oThis.uploadFilePath = mergedVideoUploadFilePathPartsArray.join('.');
 
     const fileName = coreConstants.tempFilePath + oThis.uploadFilePath.split('/').pop();
 
