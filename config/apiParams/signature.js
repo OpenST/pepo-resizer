@@ -72,10 +72,6 @@ const signature = {
         validatorMethods: ['validateStringArray']
       },
       {
-        parameter: 'merged_video_s3_url',
-        validatorMethods: ['validateString']
-      },
-      {
         parameter: 'upload_details',
         validatorMethods: ['validateObject']
       }
