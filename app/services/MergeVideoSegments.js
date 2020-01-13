@@ -112,7 +112,7 @@ class MergeVideoSegments {
 
       ffmpegObj
         .outputOptions('-movflags faststart')
-        .withOptions('-loglevel verbose')
+        .withOptions('-loglevel debug')
         .on('start', function(commandLine) {
           logger.info('Spawned FFmpeg with command: ', commandLine);
         })
