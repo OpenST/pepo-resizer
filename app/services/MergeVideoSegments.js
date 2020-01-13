@@ -64,6 +64,8 @@ class MergeVideoSegments {
   async _listTempContents() {
     const oThis = this;
 
+    console.log('=====Listing temp contents');
+
     return new Promise(function(onResolve, onReject) {
       fs.readdir('/tmp', function(err, files) {
         //handling error
@@ -110,7 +112,7 @@ class MergeVideoSegments {
 
       ffmpegObj
         .outputOptions('-movflags faststart')
-        .addOutputOption('-v')
+        .withOptions('-loglevel verbose')
         .on('start', function(commandLine) {
           logger.info('Spawned FFmpeg with command: ', commandLine);
         })
