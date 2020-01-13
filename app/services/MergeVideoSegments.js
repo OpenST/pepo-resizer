@@ -87,6 +87,7 @@ class MergeVideoSegments {
 
       ffmpegObj
         .outputOptions('-movflags faststart')
+        .addOutputOption('-v')
         .on('start', function(commandLine) {
           logger.info('Spawned FFmpeg with command: ', commandLine);
         })
