@@ -82,7 +82,13 @@ class MergeVideoSegments {
       let ffmpegObj = new Ffmpeg();
 
       for (let index = 0; index < oThis.segmentUrls.length; index++) {
-        ffmpegObj = ffmpegObj.input(`async:${oThis.segmentUrls[index]}`);
+        const segmentUrl = oThis.segmentUrls[index];
+        const fileExtension = segmentUrl.split('.').pop();
+        if (fileExtension === 'mp4') {
+          ffmpegObj = ffmpegObj.input(`async:${segmentUrl}`);
+        } else {
+          ffmpegObj = ffmpegObj.input(`${segmentUrl}`);
+        }
       }
 
       ffmpegObj
