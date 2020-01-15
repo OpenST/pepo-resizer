@@ -11,6 +11,8 @@ const rootPrefix = '../..',
   uploadBodyToS3 = require(rootPrefix + '/lib/s3/UploadBody'),
   coreConstants = require(rootPrefix + '/config/coreConstants');
 
+const waterMarkFileName = 'https://s3.amazonaws.com/uassets.stagingpepo.com/pepo-staging1000/ua/images/watermark1.png';
+
 /**
  * Class to compress video
  *
@@ -96,6 +98,7 @@ class CompressVideo {
         source: oThis.sourceUrl,
         timeout: 240
       })
+        .input(waterMarkFileName)
         .withOptions(['-c:v libx264', '-preset slow', '-crf 28', '-ss 00:00:00', '-t 00:00:30'])
         .outputOptions('-movflags faststart')
         .complexFilter(complexFiltersArray)
