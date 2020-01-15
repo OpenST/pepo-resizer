@@ -9,7 +9,7 @@ const rootPrefix = '../..',
   responseHelper = require(rootPrefix + '/lib/response'),
   logger = require(rootPrefix + '/lib/logger/customConsoleLogger'),
   uploadBodyToS3 = require(rootPrefix + '/lib/s3/UploadBody'),
-  downloadToDisk = require(rootPrefix + '/lib/s3/DownloadFile'),
+  downloadToDisk = require(rootPrefix + '/lib/s3/downloadFile'),
   coreConstants = require(rootPrefix + '/config/coreConstants');
 
 const contentType = 'video/mp4';
