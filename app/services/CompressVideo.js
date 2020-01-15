@@ -9,9 +9,10 @@ const rootPrefix = '../..',
   responseHelper = require(rootPrefix + '/lib/response'),
   logger = require(rootPrefix + '/lib/logger/customConsoleLogger'),
   uploadBodyToS3 = require(rootPrefix + '/lib/s3/UploadBody'),
-  coreConstants = require(rootPrefix + '/config/coreConstants');
+  coreConstants = require(rootPrefix + '/config/coreConstants'),
+  videoCompressionConstants = require(rootPrefix + '/lib/globalConstant/videoCompression');
 
-const waterMarkFileName = 'https://s3.amazonaws.com/uassets.stagingpepo.com/pepo-staging1000/ua/images/watermark1.png';
+const waterMarkFileName = videoCompressionConstants.waterMarkFileName;
 
 /**
  * Class to compress video
@@ -96,7 +97,7 @@ class CompressVideo {
 
     return new Promise(function(onResolve, onReject) {
       let command = '';
-      if (size == '576wx') {
+      if (size == videoCompressionConstants.externalResolution) {
         command = new Ffmpeg({
           source: oThis.sourceUrl,
           timeout: 240
