@@ -51,7 +51,7 @@ class CompressVideo {
     let promises = [];
     for (let size in oThis.compressionSizes) {
       let compressPromise = oThis
-        ._compressAndUpload(oThis.compressionSizes[size])
+        ._compressAndUpload(oThis.compressionSizes[size], size)
         .then(function(response) {
           if (response.isSuccess()) {
             oThis.compressedData[size] = response.data;
@@ -82,10 +82,11 @@ class CompressVideo {
    * Compress video to given size and upload it to s3
    *
    * @param compressionSize
+   * @param size
    * @returns {Promise<any>}
    * @private
    */
-  _compressAndUpload(compressionSize) {
+  _compressAndUpload(compressionSize, size) {
     const oThis = this,
       complexFiltersArray = [
         `[0:v]scale=w=${compressionSize.width}:h=trunc(ow/a/2)*2[bg]`,
@@ -94,14 +95,26 @@ class CompressVideo {
       fileName = coreConstants.tempFilePath + sizeToCompress + '-' + oThis.sourceUrl.split('/').pop();
 
     return new Promise(function(onResolve, onReject) {
-      let command = new Ffmpeg({
-        source: oThis.sourceUrl,
-        timeout: 240
-      })
-        .input(waterMarkFileName)
-        .withOptions(['-c:v libx264', '-preset slow', '-crf 28', '-ss 00:00:00', '-t 00:00:30'])
-        .outputOptions('-movflags faststart')
-        .complexFilter(complexFiltersArray)
+      let command = '';
+      if (size == '576x') {
+        command = new Ffmpeg({
+          source: oThis.sourceUrl,
+          timeout: 240
+        })
+          .input(waterMarkFileName)
+          .withOptions(['-c:v libx264', '-preset slow', '-crf 28', '-ss 00:00:00', '-t 00:00:30'])
+          .outputOptions('-movflags faststart')
+          .complexFilter(complexFiltersArray);
+      } else {
+        command = new Ffmpeg({
+          source: oThis.sourceUrl,
+          timeout: 240
+        })
+          .withOptions(['-c:v libx264', '-preset slow', '-crf 28', '-ss 00:00:00', '-t 00:00:30'])
+          .outputOptions('-movflags faststart')
+          .size(sizeToCompress);
+      }
+      command
         .on('start', function(commandLine) {
           logger.info('Spawned FFmpeg with command: ', commandLine);
           // return onResolve(responseHelper.successWithData({}));
