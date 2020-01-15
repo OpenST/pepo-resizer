@@ -98,7 +98,7 @@ class CompressVideo {
 
     return new Promise(function(onResolve, onReject) {
       let command = '';
-      if (size == videoCompressionConstants.externalResolution) {
+      if (size == '576x') {
         command = new Ffmpeg({
           source: oThis.sourceUrl,
           timeout: 240
