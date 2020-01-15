@@ -9,6 +9,7 @@ const rootPrefix = '../..',
   responseHelper = require(rootPrefix + '/lib/response'),
   logger = require(rootPrefix + '/lib/logger/customConsoleLogger'),
   uploadBodyToS3 = require(rootPrefix + '/lib/s3/UploadBody'),
+  downloadToDisk = require(rootPrefix + '/lib/s3/DownloadFile'),
   coreConstants = require(rootPrefix + '/config/coreConstants');
 
 const contentType = 'video/mp4';
@@ -38,10 +39,14 @@ class MergeVideoSegments {
     oThis.uploadDetails = params.upload_details;
 
     oThis.uploadFilePath = params.upload_details.file_path;
+
+    oThis.localFilePaths = [];
   }
 
   async perform() {
     const oThis = this;
+
+    await oThis._downloadFilesToDisk();
 
     await oThis
       ._mergeAndUpload()
@@ -57,6 +62,38 @@ class MergeVideoSegments {
       });
 
     return responseHelper.successWithData({});
+  }
+
+  /**
+   * Download video segments to disk
+   *
+   * @returns {Promise<void>}
+   * @private
+   */
+  async _downloadFilesToDisk() {
+    const oThis = this;
+
+    logger.info('===Downloading files to disk====');
+
+    let promiseArray = [];
+
+    for (let ind = 0; ind < oThis.segmentUrls.length; ind++) {
+      let downloadPath = coreConstants.tempFilePath + oThis.segmentUrls[ind].split('/').pop();
+      oThis.localFilePaths.push(downloadPath);
+      let params = {
+        bucket: oThis.uploadDetails['bucket'],
+        filePath: oThis.segmentUrls[ind]
+          .split('/')
+          .splice(3)
+          .join('/'),
+        downloadPath: downloadPath
+      };
+      promiseArray.push(downloadToDisk.perform(params));
+    }
+
+    await Promise.all(promiseArray);
+
+    logger.info('===Downloading done====');
   }
 
   /**
@@ -81,14 +118,8 @@ class MergeVideoSegments {
     return new Promise(function(onResolve, onReject) {
       let ffmpegObj = new Ffmpeg();
 
-      for (let index = 0; index < oThis.segmentUrls.length; index++) {
-        const segmentUrl = oThis.segmentUrls[index];
-        const fileExtension = segmentUrl.split('.').pop();
-        if (fileExtension === 'mp4') {
-          ffmpegObj = ffmpegObj.input(`async:${segmentUrl}`);
-        } else {
-          ffmpegObj = ffmpegObj.input(`${segmentUrl}`);
-        }
+      for (let index = 0; index < oThis.localFilePaths.length; index++) {
+        ffmpegObj = ffmpegObj.input(`${oThis.localFilePaths[index]}`);
       }
 
       ffmpegObj
