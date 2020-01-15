@@ -89,6 +89,7 @@ class CompressVideo {
    */
   _compressAndUpload(compressionSize, size) {
     const oThis = this,
+      sizeToCompress = compressionSize.width + 'x?',
       complexFiltersArray = [
         `[0:v]scale=w=${compressionSize.width}:h=trunc(ow/a/2)*2[bg]`,
         { filter: 'overlay', options: { x: 80, y: 80 }, inputs: ['bg', '1:v'] }
