@@ -82,17 +82,11 @@ class MergeVideoSegments {
       let ffmpegObj = new Ffmpeg();
 
       for (let index = 0; index < oThis.segmentUrls.length; index++) {
-        const segmentUrl = oThis.segmentUrls[index];
-        const fileExtension = segmentUrl.split('.').pop();
-        if (fileExtension === 'mp4') {
-          ffmpegObj = ffmpegObj.input(`async:${oThis.segmentUrls[index]}`);
-        } else {
-          ffmpegObj = ffmpegObj.input(`${oThis.segmentUrls[index]}`);
-        }
+        ffmpegObj = ffmpegObj.input(`async:${oThis.segmentUrls[index]}`);
       }
 
       ffmpegObj
-        // .withOptions('-protocol_whitelist file,https,tcp,tls,crypto,async')
+        .withOptions('-protocol_whitelist file,https,tcp,tls,crypto,async')
         .outputOptions('-movflags faststart')
         .on('start', function(commandLine) {
           logger.info('Spawned FFmpeg with command: ', commandLine);
@@ -110,18 +104,18 @@ class MergeVideoSegments {
             }
             oThis._uploadFile(fileName, contentType, oThis.uploadFilePath, dimensionsResp).then(function(resp) {
               if (resp.isSuccess()) {
-                logger.step('Uploaded successfully to the path ', oThis.uploadFilePath);
+                logger.step('Uploaded successfully to the path: ', oThis.uploadFilePath);
               } else {
-                logger.error('merged upload Failed ', resp);
+                logger.error('Merge and upload failed: ', resp);
                 return onResolve(resp);
               }
               fs.unlinkSync(fileName);
-              return onResolve(responseHelper.successWithData());
+              return onResolve(responseHelper.successWithData({}));
             });
           });
         })
         .on('error', function(err) {
-          logger.error('an error happened: ' + err);
+          logger.error('An error occurred: ' + err);
         })
         .mergeToFile(fileName);
     });
