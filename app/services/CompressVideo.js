@@ -85,7 +85,10 @@ class CompressVideo {
    */
   _compressAndUpload(compressionSize) {
     const oThis = this,
-      sizeToCompress = compressionSize.width + 'x?',
+      complexFiltersArray = [
+        `[0:v]scale=w=${compressionSize.width}:h=trunc(ow/a/2)*2[bg]`,
+        { filter: 'overlay', options: { x: 80, y: 80 }, inputs: ['bg', '1:v'] }
+      ],
       fileName = coreConstants.tempFilePath + sizeToCompress + '-' + oThis.sourceUrl.split('/').pop();
 
     return new Promise(function(onResolve, onReject) {
@@ -95,7 +98,7 @@ class CompressVideo {
       })
         .withOptions(['-c:v libx264', '-preset slow', '-crf 28', '-ss 00:00:00', '-t 00:00:30'])
         .outputOptions('-movflags faststart')
-        .size(sizeToCompress)
+        .complexFilter(complexFiltersArray)
         .on('start', function(commandLine) {
           logger.info('Spawned FFmpeg with command: ', commandLine);
           // return onResolve(responseHelper.successWithData({}));
