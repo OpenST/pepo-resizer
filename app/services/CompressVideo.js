@@ -107,8 +107,8 @@ class CompressVideo {
 
     return new Promise(function(onResolve, onReject) {
       let command = '';
-      if (size === '576wx') {
-        sizeToCompress = compressionSize.width + 'wx?';
+      if (size === videoCompressionConstants.externalResolution) {
+        sizeToCompress = compressionSize.width + 'external?';
         fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePartArr.join('.');
         command = new Ffmpeg({
           source: oThis.sourceUrl,
