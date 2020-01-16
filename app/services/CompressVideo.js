@@ -109,7 +109,7 @@ class CompressVideo {
       let command = '';
       if (size === videoCompressionConstants.externalResolution) {
         sizeToCompress = compressionSize.width + 'external?';
-        fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePartArr.join('.');
+        fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePart;
         command = new Ffmpeg({
           source: oThis.sourceUrl,
           timeout: 240
@@ -120,7 +120,7 @@ class CompressVideo {
           .complexFilter(complexFiltersArray);
       } else {
         sizeToCompress = compressionSize.width + 'x?';
-        fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePartArr.join('.');
+        fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePart;
         command = new Ffmpeg({
           source: oThis.sourceUrl,
           timeout: 240
