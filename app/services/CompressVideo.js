@@ -89,16 +89,27 @@ class CompressVideo {
    */
   _compressAndUpload(compressionSize, size) {
     const oThis = this,
-      sizeToCompress = compressionSize.width + 'x?',
       complexFiltersArray = [
         `[0:v]scale=w=${compressionSize.width}:h=trunc(ow/a/2)*2[bg]`,
         { filter: 'overlay', options: { x: 80, y: 80 }, inputs: ['bg', '1:v'] }
-      ],
-      fileName = coreConstants.tempFilePath + sizeToCompress + '-' + oThis.sourceUrl.split('/').pop();
+      ];
+
+    const filenamePart = oThis.sourceUrl.split('/').pop(),
+      filenamePartArr = filenamePart.split('.');
+
+    // All compress videos are mp4 format.
+    // pop will remove last element
+    filenamePartArr.pop();
+    filenamePartArr.push('mp4');
+
+    let sizeToCompress = '';
+    let fileName = '';
 
     return new Promise(function(onResolve, onReject) {
       let command = '';
-      if (size == '576wx') {
+      if (size === '576wx') {
+        sizeToCompress = compressionSize.width + 'wx?';
+        fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePartArr.join('.');
         command = new Ffmpeg({
           source: oThis.sourceUrl,
           timeout: 240
@@ -108,6 +119,8 @@ class CompressVideo {
           .outputOptions('-movflags faststart')
           .complexFilter(complexFiltersArray);
       } else {
+        sizeToCompress = compressionSize.width + 'x?';
+        fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePartArr.join('.');
         command = new Ffmpeg({
           source: oThis.sourceUrl,
           timeout: 240
