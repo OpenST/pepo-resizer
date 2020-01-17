@@ -9,7 +9,6 @@
 const rootPrefix = '.',
   apiName = require(rootPrefix + '/lib/globalConstant/apiName'),
   apiVersions = require(rootPrefix + '/lib/globalConstant/apiVersions'),
-  ApiParamsValidator = require(rootPrefix + '/lib/validators/ApiParams'),
   sanitizer = require(rootPrefix + '/helpers/sanitizer'),
   routeHelper = require(rootPrefix + '/routes/helper');
 class Executor {

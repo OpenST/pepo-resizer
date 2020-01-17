@@ -10,6 +10,7 @@ const rootPrefix = '../..',
 const router = express.Router(),
   errorConfig = basicHelper.fetchErrorConfig(apiVersions.internal);
 
+// Routes are used for local testing by bringing up a express server.
 /* Elb health checker request */
 router.post('/image/resize', function(req, res, next) {
   req.decodedParams.apiName = apiName.resizeAndUpload;
