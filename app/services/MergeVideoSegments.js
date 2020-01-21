@@ -40,6 +40,7 @@ class MergeVideoSegments {
 
     oThis.uploadFilePath = params.upload_details.file_path;
 
+    oThis.errorFilePath = null;
     oThis.localFilePaths = [];
   }
 
@@ -57,8 +58,9 @@ class MergeVideoSegments {
           logger.error('Error while merging: ', response.error);
         }
       })
-      .catch(function(err) {
+      .catch(async function(err) {
         logger.error('Exception while merging: ', err);
+        return oThis._uploadErrorFile();
       });
 
     return responseHelper.successWithData({});
@@ -138,20 +140,31 @@ class MergeVideoSegments {
               dimensionsResp.size = stats.size;
               dimensionsResp.width = response.data.width;
               dimensionsResp.height = response.data.height;
+
+              oThis._uploadFile(fileName, contentType, oThis.uploadFilePath, dimensionsResp).then(function(resp) {
+                if (resp.isSuccess()) {
+                  logger.step('Uploaded successfully to the path: ', oThis.uploadFilePath);
+
+                  fs.unlinkSync(fileName); // Can be removed since env is lambda
+                  return onResolve(responseHelper.successWithData({}));
+                } else {
+                  logger.error('Merge and upload failed: ', resp);
+
+                  oThis._uploadErrorFile().then(function() {
+                    fs.unlinkSync(fileName); // Can be removed since env is lambda
+                    return onResolve(responseHelper.successWithData({}));
+                  });
+                }
+              });
             }
-            oThis._uploadFile(fileName, contentType, oThis.uploadFilePath, dimensionsResp).then(function(resp) {
-              if (resp.isSuccess()) {
-                logger.step('Uploaded successfully to the path: ', oThis.uploadFilePath);
-              } else {
-                logger.error('Merge and upload failed: ', resp);
-                return onResolve(resp);
-              }
-              fs.unlinkSync(fileName);
-              return onResolve(responseHelper.successWithData({}));
-            });
+            return onResolve(responseHelper.successWithData({}));
           });
         })
         .on('error', function(err) {
+          oThis._uploadErrorFile().then(function() {
+            return onResolve(responseHelper.successWithData({}));
+          });
+
           logger.error('An error occurred: ' + err);
         })
         .mergeToFile(fileName);
@@ -198,7 +211,7 @@ class MergeVideoSegments {
     await uploadBodyToS3
       .perform({
         metaData: metaData,
-        bucket: oThis.uploadDetails['bucket'],
+        bucket: oThis.uploadDetails['bucket'], // user assets bucket
         acl: oThis.uploadDetails['acl'],
         s3Region: oThis.uploadDetails['region'],
         contentType: contentType,
@@ -214,6 +227,37 @@ class MergeVideoSegments {
       });
 
     return responseHelper.successWithData({});
+  }
+
+  /**
+   * Upload error file
+   * @returns {Promise<*|result>}
+   * @private
+   */
+  async _uploadErrorFile() {
+    const oThis = this;
+
+    // https://dbvoeb7t6hffk.cloudfront.net/pepo-staging1000/ua/videos/1026-34242f1e719a661b57ea7358d4f9ef62-576w.mp4
+    // https://dbvoeb7t6hffk.cloudfront.net/pepo-staging1000/logs/1026-34242f1e719a661b57ea7358d4f9ef62-576w-error.txt
+    const contentType = 'text/plain',
+      fileArray = oThis.uploadFilePath.split('/'),
+      fileName = fileArray.pop(),
+      splitFileName = fileName.split('.');
+
+    fileArray.pop();
+    fileArray.pop();
+
+    splitFileName.pop();
+    splitFileName[0] += '-error';
+
+    let errorFileName = splitFileName.push('txt').join('.'),
+      pathPrefix = fileArray.join('/'),
+      uploadPath = pathPrefix + '/logs/' + errorFileName,
+      localFilePath = coreConstants.tempFilePath + '/' + errorFileName;
+
+    fs.closeSync(fs.openSync(localFilePath, 'w')); // Touch file
+
+    return oThis._uploadFile(localFilePath, contentType, uploadPath, {});
   }
 }
 
