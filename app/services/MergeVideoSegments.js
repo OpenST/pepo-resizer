@@ -258,7 +258,7 @@ class MergeVideoSegments {
 
     fs.closeSync(fs.openSync(localFilePath, 'w')); // Touch file
 
-    return oThis._uploadFile(localFilePath, contentType, uploadPath, {});
+    return oThis._uploadFile(localFilePath, contentType, uploadPath, null);
   }
 }
 
