@@ -96,7 +96,7 @@ class CompressVideo {
       filenamePartArr = filenamePart.split('.');
 
     if (filenamePart.indexOf('?AWSAccessKeyId') > -1) {
-      filenamePart = fileName.split('?AWSAccessKeyId')[0];
+      filenamePart = filenamePart.split('?AWSAccessKeyId')[0];
     }
 
     const complexFiltersArray = [
