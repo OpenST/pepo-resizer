@@ -90,14 +90,19 @@ class CompressVideo {
    * @private
    */
   _compressAndUpload(compressionSize, size) {
-    const oThis = this,
-      complexFiltersArray = [
-        `[0:v]scale=w=${compressionSize.width}:h=trunc(ow/a/2)*2[bg]`,
-        { filter: 'overlay', options: { x: 80, y: 80 }, inputs: ['bg', '1:v'] }
-      ];
+    const oThis = this;
 
-    const filenamePart = oThis.sourceUrl.split('/').pop(),
+    let filenamePart = oThis.sourceUrl.split('/').pop(),
       filenamePartArr = filenamePart.split('.');
+
+    if (filenamePart.indexOf('?AWSAccessKeyId') > -1) {
+      filenamePart = fileName.split('?AWSAccessKeyId')[0];
+    }
+
+    const complexFiltersArray = [
+      `[0:v]scale=w=${compressionSize.width}:h=trunc(ow/a/2)*2[bg]`,
+      { filter: 'overlay', options: { x: 80, y: 80 }, inputs: ['bg', '1:v'] }
+    ];
 
     // All compress videos are mp4 format.
     // pop will remove last element
