@@ -249,8 +249,9 @@ class MergeVideoSegments {
 
     splitFileName.pop();
     splitFileName[0] += '-error';
+    splitFileName.push('txt');
 
-    let errorFileName = splitFileName.push('txt').join('.'),
+    let errorFileName = splitFileName.join('.'),
       pathPrefix = fileArray.join('/'),
       uploadPath = pathPrefix + '/logs/' + errorFileName,
       localFilePath = coreConstants.tempFilePath + '/' + errorFileName;
