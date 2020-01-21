@@ -49,6 +49,8 @@ class CompressVideo {
   async perform() {
     const oThis = this;
 
+    oThis.sourceUrl = oThis.sourceUrl.replace(/&amp;/g, '&');
+
     let promises = [];
     for (let size in oThis.compressionSizes) {
       let compressPromise = oThis
