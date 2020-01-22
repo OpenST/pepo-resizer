@@ -100,7 +100,7 @@ class CompressVideo {
 
     const complexFiltersArray = [
       `[0:v]scale=w=${compressionSize.width}:h=trunc(ow/a/2)*2[bg]`,
-      { filter: 'overlay', options: { x: 80, y: 80 }, inputs: ['bg', '1:v'] }
+      { filter: 'overlay', options: { x: 20, y: 20 }, inputs: ['bg', '1:v'] }
     ];
 
     // All compress videos are mp4 format.
