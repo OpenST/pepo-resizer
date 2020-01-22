@@ -50,6 +50,8 @@ class CompressVideo {
     const oThis = this;
 
     oThis.sourceUrl = oThis.sourceUrl.replace(/&amp;/g, '&');
+    let url = new URL(oThis.sourceUrl);
+    oThis.sourceUrl = url.origin + '/' + url.pathname;
 
     let promises = [];
     for (let size in oThis.compressionSizes) {
@@ -94,10 +96,6 @@ class CompressVideo {
 
     let filenamePart = oThis.sourceUrl.split('/').pop(),
       filenamePartArr = filenamePart.split('.');
-
-    if (filenamePart.indexOf('?AWSAccessKeyId') > -1) {
-      filenamePart = filenamePart.split('?AWSAccessKeyId')[0];
-    }
 
     const complexFiltersArray = [
       `[0:v]scale=w=${compressionSize.width}:h=trunc(ow/a/2)*2[bg]`,
