@@ -51,7 +51,7 @@ class CompressVideo {
 
     oThis.sourceUrl = oThis.sourceUrl.replace(/&amp;/g, '&');
     let url = new URL(oThis.sourceUrl);
-    oThis.sourceUrl = url.origin + '/' + url.pathname;
+    oThis.sourceUrl = url.origin + url.pathname;
 
     let promises = [];
     for (let size in oThis.compressionSizes) {
