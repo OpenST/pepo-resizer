@@ -50,8 +50,6 @@ class CompressVideo {
     const oThis = this;
 
     oThis.sourceUrl = oThis.sourceUrl.replace(/&amp;/g, '&');
-    let url = new URL(oThis.sourceUrl);
-    oThis.sourceUrl = url.origin + url.pathname;
 
     let promises = [];
     for (let size in oThis.compressionSizes) {
@@ -94,7 +92,10 @@ class CompressVideo {
   _compressAndUpload(compressionSize, size) {
     const oThis = this;
 
-    let filenamePart = oThis.sourceUrl.split('/').pop(),
+    let url = new URL(oThis.sourceUrl),
+      originalSourceUrl = url.origin + url.pathname;
+
+    let filenamePart = originalSourceUrl.split('/').pop(),
       filenamePartArr = filenamePart.split('.');
 
     const complexFiltersArray = [
