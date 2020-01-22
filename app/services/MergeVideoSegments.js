@@ -157,7 +157,6 @@ class MergeVideoSegments {
                 }
               });
             }
-            return onResolve(responseHelper.successWithData({}));
           });
         })
         .on('error', function(err) {
