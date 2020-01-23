@@ -9,7 +9,10 @@ const rootPrefix = '../..',
   responseHelper = require(rootPrefix + '/lib/response'),
   logger = require(rootPrefix + '/lib/logger/customConsoleLogger'),
   uploadBodyToS3 = require(rootPrefix + '/lib/s3/UploadBody'),
-  coreConstants = require(rootPrefix + '/config/coreConstants');
+  coreConstants = require(rootPrefix + '/config/coreConstants'),
+  videoCompressionConstants = require(rootPrefix + '/lib/globalConstant/videoCompression');
+
+const waterMarkFileName = videoCompressionConstants.waterMarkFileName;
 
 const contentType = 'video/mp4';
 /**
@@ -47,10 +50,12 @@ class CompressVideo {
   async perform() {
     const oThis = this;
 
+    oThis.sourceUrl = oThis.sourceUrl.replace(/&amp;/g, '&');
+
     let promises = [];
     for (let size in oThis.compressionSizes) {
       let compressPromise = oThis
-        ._compressAndUpload(oThis.compressionSizes[size])
+        ._compressAndUpload(oThis.compressionSizes[size], size)
         .then(function(response) {
           if (response.isSuccess()) {
             oThis.compressedData[size] = response.data;
@@ -81,12 +86,15 @@ class CompressVideo {
    * Compress video to given size and upload it to s3
    *
    * @param compressionSize
+   * @param size
    * @returns {Promise<any>}
    * @private
    */
-  _compressAndUpload(compressionSize) {
-    const oThis = this,
-      sizeToCompress = compressionSize.width + 'x?',
+  _compressAndUpload(compressionSize, size) {
+    const oThis = this;
+
+    let url = new URL(oThis.sourceUrl),
+      originalSourceUrl = url.origin + url.pathname,
       filenamePart = oThis.sourceUrl.split('/').pop(),
       filenamePartArr = filenamePart.split('.');
 
@@ -95,16 +103,39 @@ class CompressVideo {
     filenamePartArr.pop();
     filenamePartArr.push('mp4');
 
-    const fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePartArr.join('.');
+    const complexFiltersArray = [
+      `[0:v]scale=w=${compressionSize.width}:h=trunc(ow/a/2)*2[bg]`,
+      { filter: 'overlay', options: { x: 20, y: 20 }, inputs: ['bg', '1:v'] }
+    ];
+
+    let sizeToCompress = '';
+    let fileName = '';
 
     return new Promise(function(onResolve, onReject) {
-      let command = new Ffmpeg({
-        source: oThis.sourceUrl,
-        timeout: 240
-      })
-        .withOptions(['-c:v libx264', '-preset slow', '-crf 28', '-ss 00:00:00', '-t 00:00:30'])
-        .outputOptions('-movflags faststart')
-        .size(sizeToCompress)
+      let command = '';
+      if (size === videoCompressionConstants.externalResolution) {
+        sizeToCompress = compressionSize.width + 'external?';
+        fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePartArr.join('.');
+        command = new Ffmpeg({
+          source: oThis.sourceUrl,
+          timeout: 240
+        })
+          .input(waterMarkFileName)
+          .withOptions(['-c:v libx264', '-preset slow', '-crf 28', '-ss 00:00:00', '-t 00:00:30'])
+          .outputOptions('-movflags faststart')
+          .complexFilter(complexFiltersArray);
+      } else {
+        sizeToCompress = compressionSize.width + 'x?';
+        fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePartArr.join('.');
+        command = new Ffmpeg({
+          source: oThis.sourceUrl,
+          timeout: 240
+        })
+          .withOptions(['-c:v libx264', '-preset slow', '-crf 28', '-ss 00:00:00', '-t 00:00:30'])
+          .outputOptions('-movflags faststart')
+          .size(sizeToCompress);
+      }
+      command
         .on('start', function(commandLine) {
           logger.info('Spawned FFmpeg with command: ', commandLine);
           // return onResolve(responseHelper.successWithData({}));
