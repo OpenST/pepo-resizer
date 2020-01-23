@@ -14,6 +14,7 @@ const rootPrefix = '../..',
 
 const waterMarkFileName = videoCompressionConstants.waterMarkFileName;
 
+const contentType = 'video/mp4';
 /**
  * Class to compress video
  *
@@ -93,20 +94,19 @@ class CompressVideo {
     const oThis = this;
 
     let url = new URL(oThis.sourceUrl),
-      originalSourceUrl = url.origin + url.pathname;
-
-    let filenamePart = originalSourceUrl.split('/').pop(),
+      originalSourceUrl = url.origin + url.pathname,
+      filenamePart = oThis.sourceUrl.split('/').pop(),
       filenamePartArr = filenamePart.split('.');
-
-    const complexFiltersArray = [
-      `[0:v]scale=w=${compressionSize.width}:h=trunc(ow/a/2)*2[bg]`,
-      { filter: 'overlay', options: { x: 20, y: 20 }, inputs: ['bg', '1:v'] }
-    ];
 
     // All compress videos are mp4 format.
     // pop will remove last element
     filenamePartArr.pop();
     filenamePartArr.push('mp4');
+
+    const complexFiltersArray = [
+      `[0:v]scale=w=${compressionSize.width}:h=trunc(ow/a/2)*2[bg]`,
+      { filter: 'overlay', options: { x: 20, y: 20 }, inputs: ['bg', '1:v'] }
+    ];
 
     let sizeToCompress = '';
     let fileName = '';
@@ -115,7 +115,7 @@ class CompressVideo {
       let command = '';
       if (size === videoCompressionConstants.externalResolution) {
         sizeToCompress = compressionSize.width + 'external?';
-        fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePart;
+        fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePartArr.join('.');
         command = new Ffmpeg({
           source: oThis.sourceUrl,
           timeout: 240
@@ -126,7 +126,7 @@ class CompressVideo {
           .complexFilter(complexFiltersArray);
       } else {
         sizeToCompress = compressionSize.width + 'x?';
-        fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePart;
+        fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePartArr.join('.');
         command = new Ffmpeg({
           source: oThis.sourceUrl,
           timeout: 240
@@ -161,18 +161,16 @@ class CompressVideo {
               dimensionsResp.width = response.data.width;
               dimensionsResp.height = response.data.height;
             }
-            oThis
-              ._uploadFile(fileName, compressionSize.content_type, compressionSize.file_path, dimensionsResp)
-              .then(function(resp) {
-                if (resp.isSuccess()) {
-                  dimensionsResp = dimensionsResp || {};
-                  dimensionsResp.url = compressionSize.s3_url;
-                } else {
-                  return onResolve(resp);
-                }
-                fs.unlinkSync(fileName);
-                return onResolve(responseHelper.successWithData(dimensionsResp));
-              });
+            oThis._uploadFile(fileName, contentType, compressionSize.file_path, dimensionsResp).then(function(resp) {
+              if (resp.isSuccess()) {
+                dimensionsResp = dimensionsResp || {};
+                dimensionsResp.url = compressionSize.s3_url;
+              } else {
+                return onResolve(resp);
+              }
+              fs.unlinkSync(fileName);
+              return onResolve(responseHelper.successWithData(dimensionsResp));
+            });
           });
         })
         .saveToFile(fileName);

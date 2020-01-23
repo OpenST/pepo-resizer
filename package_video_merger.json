@@ -1,0 +1,27 @@
+{
+  "name": "pepo-video-merger",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {},
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "1.0.19",
+    "@ffprobe-installer/ffprobe": "1.0.12",
+    "aws-sdk": "2.373.0",
+    "bignumber.js": "9.0.0",
+    "fluent-ffmpeg": "2.1.2",
+    "jsonwebtoken": "8.4.0",
+    "morgan": "1.9.1",
+    "request": "2.88.0",
+    "sanitize-html": "1.19.3"
+  },
+  "devDependencies": {
+    "body-parser": "1.18.3",
+    "continuation-local-storage": "3.2.1",
+    "express": "4.16.4",
+    "helmet": "3.21.1",
+    "eslint": "6.5.1",
+    "lint-staged": "7.2.0",
+    "pre-commit": "1.2.2",
+    "prettier": "1.13.7"
+  }
+}
