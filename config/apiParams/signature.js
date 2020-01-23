@@ -64,6 +64,19 @@ const signature = {
       }
     ],
     optional: []
+  },
+  [apiName.mergeVideoSegments]: {
+    mandatory: [
+      {
+        parameter: 'segment_urls',
+        validatorMethods: ['validateStringArray']
+      },
+      {
+        parameter: 'upload_details',
+        validatorMethods: ['validateObject']
+      }
+    ],
+    optional: []
   }
 };
 

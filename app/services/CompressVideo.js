@@ -11,6 +11,7 @@ const rootPrefix = '../..',
   uploadBodyToS3 = require(rootPrefix + '/lib/s3/UploadBody'),
   coreConstants = require(rootPrefix + '/config/coreConstants');
 
+const contentType = 'video/mp4';
 /**
  * Class to compress video
  *
@@ -86,7 +87,15 @@ class CompressVideo {
   _compressAndUpload(compressionSize) {
     const oThis = this,
       sizeToCompress = compressionSize.width + 'x?',
-      fileName = coreConstants.tempFilePath + sizeToCompress + '-' + oThis.sourceUrl.split('/').pop();
+      filenamePart = oThis.sourceUrl.split('/').pop(),
+      filenamePartArr = filenamePart.split('.');
+
+    // All compress videos are mp4 format.
+    // pop will remove last element
+    filenamePartArr.pop();
+    filenamePartArr.push('mp4');
+
+    const fileName = coreConstants.tempFilePath + sizeToCompress + '-' + filenamePartArr.join('.');
 
     return new Promise(function(onResolve, onReject) {
       let command = new Ffmpeg({
@@ -121,18 +130,16 @@ class CompressVideo {
               dimensionsResp.width = response.data.width;
               dimensionsResp.height = response.data.height;
             }
-            oThis
-              ._uploadFile(fileName, compressionSize.content_type, compressionSize.file_path, dimensionsResp)
-              .then(function(resp) {
-                if (resp.isSuccess()) {
-                  dimensionsResp = dimensionsResp || {};
-                  dimensionsResp.url = compressionSize.s3_url;
-                } else {
-                  return onResolve(resp);
-                }
-                fs.unlinkSync(fileName);
-                return onResolve(responseHelper.successWithData(dimensionsResp));
-              });
+            oThis._uploadFile(fileName, contentType, compressionSize.file_path, dimensionsResp).then(function(resp) {
+              if (resp.isSuccess()) {
+                dimensionsResp = dimensionsResp || {};
+                dimensionsResp.url = compressionSize.s3_url;
+              } else {
+                return onResolve(resp);
+              }
+              fs.unlinkSync(fileName);
+              return onResolve(responseHelper.successWithData(dimensionsResp));
+            });
           });
         })
         .saveToFile(fileName);
