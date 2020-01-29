@@ -4,6 +4,7 @@ const fs = require('fs');
 const Ffmpeg = require('fluent-ffmpeg');
 Ffmpeg.setFfmpegPath(ffmpegPath);
 Ffmpeg.setFfprobePath(ffprobePath);
+const imageSizeObj = require('image-size');
 
 const rootPrefix = '../..',
   responseHelper = require(rootPrefix + '/lib/response'),
@@ -79,8 +80,9 @@ class CompressVideo {
           logger.info('Spawned FFmpeg with command: ', commandLine);
         })
         .on('end', async function() {
-          console.log('screenshots were saved', Date.now());
-          await oThis._uploadFile(localFilePath, oThis.contentType, oThis.thumbnailDetails.file_path);
+          console.log('screenshots are created', Date.now());
+          const imageMeta = await oThis._fetchImageMeta(localFilePath);
+          await oThis._uploadFile(localFilePath, oThis.contentType, oThis.thumbnailDetails.file_path, imageMeta);
           onResolve(responseHelper.successWithData({}));
         })
         .on('error', function(err) {
@@ -105,21 +107,41 @@ class CompressVideo {
   }
 
   /**
+   * Fetch image Meta
+   *
+   * @param localFilePath
+   * @returns {*}
+   * @private
+   */
+  async _fetchImageMeta(localFilePath) {
+    let imageMeta = null;
+    await new Promise(function(onResolve, onReject) {
+      imageSizeObj(localFilePath, function(err, dimensions) {
+        console.log('Image dimensions width-height: ', dimensions.width, dimensions.height);
+        imageMeta = { width: dimensions.width, height: dimensions.height };
+        onResolve();
+      });
+    });
+    return imageMeta;
+  }
+
+  /**
    * Upload file to S3
    *
-   * @param videoFile
+   * @param file
    * @param contentType
    * @param filePath
-   * @param metaData
+   * @param imageMeta
    * @returns {Promise<*|result>}
    * @private
    */
-  async _uploadFile(file, contentType, filePath) {
+  async _uploadFile(file, contentType, filePath, imageMeta) {
     const oThis = this;
 
     logger.info('Uploading file: ', filePath);
     await uploadBodyToS3
       .perform({
+        metaData: imageMeta,
         bucket: oThis.uploadDetails['bucket'],
         acl: oThis.uploadDetails['acl'],
         s3Region: oThis.uploadDetails['region'],
