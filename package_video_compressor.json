@@ -12,7 +12,8 @@
     "jsonwebtoken": "8.4.0",
     "morgan": "1.9.1",
     "request": "2.88.0",
-    "sanitize-html": "1.19.3"
+    "sanitize-html": "1.19.3",
+    "image-size": "0.8.3"
   },
   "devDependencies": {
     "body-parser": "1.18.3",

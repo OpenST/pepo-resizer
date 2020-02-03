@@ -11,11 +11,12 @@
     "@ffprobe-installer/ffprobe": "1.0.12",
     "aws-sdk": "2.373.0",
     "bignumber.js": "9.0.0",
+    "body-parser": "1.18.3",
     "fluent-ffmpeg": "2.1.2",
+    "image-size": "0.8.3",
     "request": "2.88.0",
     "sanitize-html": "1.19.3",
-    "sharp": "0.22.1",
-    "body-parser": "1.18.3"
+    "sharp": "0.22.1"
   },
   "devDependencies": {
     "eslint": "6.5.1",
