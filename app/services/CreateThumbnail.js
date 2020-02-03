@@ -117,6 +117,8 @@ class CompressVideo {
     let imageMeta = null;
     await new Promise(function(onResolve, onReject) {
       imageSizeObj(localFilePath, function(err, dimensions) {
+        if(err) return onReject(err);
+
         console.log('Image dimensions width-height: ', dimensions.width, dimensions.height);
         imageMeta = { width: dimensions.width, height: dimensions.height };
         onResolve();
