@@ -121,7 +121,7 @@ class CompressVideo {
           timeout: 240
         })
           .input(waterMarkFileName)
-          .withOptions(['-c:v libx264', '-preset slow', '-crf 28', '-ss 00:00:00', '-t 00:00:30'])
+          .withOptions(['-c:v libx264', '-preset slow', '-crf 28'])
           .outputOptions('-movflags faststart')
           .complexFilter(complexFiltersArray);
       } else {
@@ -131,7 +131,7 @@ class CompressVideo {
           source: oThis.sourceUrl,
           timeout: 240
         })
-          .withOptions(['-c:v libx264', '-preset slow', '-crf 28', '-ss 00:00:00', '-t 00:00:30'])
+          .withOptions(['-c:v libx264', '-preset slow', '-crf 28'])
           .outputOptions('-movflags faststart')
           .size(sizeToCompress);
       }
