@@ -160,6 +160,7 @@ class CompressVideo {
               dimensionsResp.size = stats.size;
               dimensionsResp.width = response.data.width;
               dimensionsResp.height = response.data.height;
+              dimensionsResp.duration = response.data.duration;
             }
             oThis._uploadFile(fileName, contentType, compressionSize.file_path, dimensionsResp).then(function(resp) {
               if (resp.isSuccess()) {
@@ -190,10 +191,11 @@ class CompressVideo {
     return new Promise(function(onResolve, onReject) {
       // Find dimensions of video
       Ffmpeg.ffprobe(videoFile, function(err, data) {
-        let dimensions = { width: 0, height: 0 };
+        let dimensions = { width: 0, height: 0, duration: 0 };
         if (data && data.streams && data.streams[0]) {
           dimensions.width = data.streams[0].width;
           dimensions.height = data.streams[0].height;
+          dimensions.duration = data.streams[0].duration;
         }
         onResolve(responseHelper.successWithData(dimensions));
       });
