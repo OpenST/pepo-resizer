@@ -195,7 +195,7 @@ class CompressVideo {
         if (data && data.streams && data.streams[0]) {
           dimensions.width = data.streams[0].width;
           dimensions.height = data.streams[0].height;
-          dimensions.duration = data.streams[0].duration;
+          dimensions.duration = Math.round(data.streams[0].duration * 1000);
         }
         onResolve(responseHelper.successWithData(dimensions));
       });
