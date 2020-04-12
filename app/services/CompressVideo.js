@@ -12,7 +12,7 @@ const rootPrefix = '../..',
   coreConstants = require(rootPrefix + '/config/coreConstants'),
   videoCompressionConstants = require(rootPrefix + '/lib/globalConstant/videoCompression');
 
-const waterMarkFileName = videoCompressionConstants.waterMarkFileName;
+const waterMarkFileName = coreConstants.WATERMARK_IMAGE_URL;
 
 const contentType = 'video/mp4';
 /**

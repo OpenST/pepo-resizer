@@ -33,6 +33,10 @@ class CoreConstants {
     return process.env.PR_S3_AWS_REGION;
   }
 
+  get WATERMARK_IMAGE_URL() {
+    return process.env.PR_WATERMARK_IMAGE_URL;
+  }
+
   get tempFilePath() {
     return process.env.PR_SHARED_DIR || '/tmp/';
   }
